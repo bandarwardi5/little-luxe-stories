@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@source "../src";
+@import "tw-animate-css";
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
+
+@font-face {
+  font-family: 'Ethnocentric';
+  src: url('./assets/fonts/ethnocentric rg.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Ethnocentric';
+  src: url('./assets/fonts/ethnocentric rg it.otf') format('opentype');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Cairo', system-ui, sans-serif;
+  --font-ethno: 'Ethnocentric', sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-banner-pink: var(--banner-pink);
+  --color-banner-mint: var(--banner-mint);
+  --color-banner-peach: var(--banner-peach);
+  --color-star: var(--star);
+  --color-sale: var(--sale);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.22 0.04 270);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.04 270);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.04 270);
+  /* Brand gold/brown from logo */
+  --primary: #A68B44;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: #FDF2F2;
+  --secondary-foreground: oklch(0.22 0.04 270);
+  --muted: oklch(0.96 0.005 280);
+  --muted-foreground: oklch(0.5 0.02 270);
+  --accent: #FDF2F2;
+  --accent-foreground: oklch(0.22 0.04 270);
+  --destructive: oklch(0.6 0.24 27);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0.01 280);
+  --input: oklch(0.92 0.01 280);
+  --ring: #A68B44;
+
+  --banner-pink: #FDF2F2;
+  --banner-mint: oklch(0.94 0.04 160);
+  --banner-peach: oklch(0.93 0.05 60);
+  --star: #A68B44;
+  --sale: #A68B44;
+
+  --chart-1: #A68B44;
+  --chart-2: oklch(0.7 0.15 160);
+  --chart-3: oklch(0.75 0.15 80);
+  --chart-4: oklch(0.6 0.2 280);
+  --chart-5: oklch(0.65 0.2 30);
+  --sidebar: oklch(0.98 0.005 280);
+  --sidebar-foreground: oklch(0.22 0.04 270);
+  --sidebar-primary: #A68B44;
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: #FDF2F2;
+  --sidebar-accent-foreground: oklch(0.22 0.04 270);
+  --sidebar-border: oklch(0.92 0.01 280);
+  --sidebar-ring: #A68B44;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    direction: rtl;
+    overflow-x: hidden;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    width: 100%;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
