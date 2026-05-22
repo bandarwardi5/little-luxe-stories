@@ -19,6 +19,7 @@ import {
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
+import { NotificationsDropdown } from "@/components/admin/NotificationsDropdown";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -166,10 +167,7 @@ function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-3 md:gap-4">
-            <button className="relative p-2 rounded-full hover:bg-secondary transition-colors">
-              <Bell size={20} />
-              <span className="absolute top-1.5 left-1.5 w-2 h-2 bg-primary rounded-full border-2 border-white"></span>
-            </button>
+            <NotificationsDropdown />
             <div className="h-10 w-10 rounded-full bg-banner-pink grid place-items-center font-bold text-primary border-2 border-primary/20 shrink-0">
               {user?.displayName?.charAt(0) || "أ"}
             </div>
