@@ -112,6 +112,20 @@ export const useOrders = () => useCollection<FsOrder>("orders", orderBy("created
 export const useUsers = () => useCollection<any>("users");
 export const useNewsletter = () => useCollection<any>("newsletter");
 export const useContacts = () => useCollection<any>("contacts");
+export const useHero = () => useCollection<any>("hero", orderBy("order", "asc"));
+
+export function useSettings() {
+  const [settings, setSettings] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "settings", "general"), (snap) => {
+      setSettings(snap.exists() ? snap.data() : null);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, []);
+  return { settings, loading };
+}
 
 export function useUserOrders(userId: string | undefined) {
   return useCollection<FsOrder>("orders", ...(userId ? [where("userId", "==", userId), orderBy("createdAt", "desc")] : []));

@@ -22,9 +22,32 @@ export const UPLOAD_API = import.meta.env.VITE_UPLOAD_API as string;
 
 export function imageUrl(path: string | undefined | null): string {
   if (!path) return "";
-  if (path.startsWith("http")) return path;
-  return `${UPLOAD_BASE}/${path.replace(/^\/+/, "")}`;
+  
+  // If it's already a full URL or data URI, return it as is
+  if (path.startsWith("http") || path.startsWith("data:")) return path;
+  
+  // If it starts with / but not /assets or /uploads, it's a local absolute path
+  if (path.startsWith("/") && !path.startsWith("/uploads") && !path.startsWith("/assets")) return path;
+
+  // Normalize the path by removing leading slashes
+  const cleanPath = path.replace(/^\/+/, "");
+  const base = UPLOAD_BASE || "https://cyan-frog-373577.hostingersite.com/uploads";
+
+  // If it's an upload path (contains 'uploads/' or we're forced to use the base)
+  if (cleanPath.startsWith("uploads/")) {
+    const fileName = cleanPath.replace(/^uploads\//, "");
+    return `${base.replace(/\/+$/, "")}/${fileName}`;
+  }
+
+  // Fallback for simple filenames that might be in assets
+  if (cleanPath.includes(".") && !cleanPath.includes("/")) {
+    return `/assets/${cleanPath}`;
+  }
+  
+  // Default fallback to base if it's not an asset
+  return `${base.replace(/\/+$/, "")}/${cleanPath}`;
 }
+
 
 export async function uploadImage(file: File): Promise<string> {
   const fd = new FormData();

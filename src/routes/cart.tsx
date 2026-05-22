@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { products } from "@/lib/products";
+import { useCart } from "@/lib/cart-context";
+import { useSettings } from "@/lib/firestore-hooks";
 import { ShoppingBag, Trash2, Plus, Minus, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/cart")({
@@ -15,15 +16,18 @@ export const Route = createFileRoute("/cart")({
 });
 
 function CartPage() {
-  // Mock cart data
-  const cartItems = products.slice(0, 2).map(p => ({ ...p, quantity: 1 }));
+  const { items: cartItems, total: subtotal, remove, setQty } = useCart();
+  const { settings } = useSettings();
   
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 500 ? 0 : 50;
+  const shippingFee = settings?.shippingFee ?? 50;
+  const freeThreshold = settings?.freeShippingThreshold ?? 500;
+  const currency = settings?.currency || "ل.ت";
+
+  const shipping = (freeThreshold > 0 && subtotal >= freeThreshold) || cartItems.length === 0 ? 0 : shippingFee;
   const total = subtotal + shipping;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col text-right" dir="rtl">
       <Header />
 
       <div className="bg-secondary/30 py-8 border-b">
@@ -58,11 +62,14 @@ function CartPage() {
                           <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                         </div>
                         <div className="flex flex-col justify-center">
-                          <Link to="/shop" className="font-bold hover:text-primary transition-colors line-clamp-2 mb-1">
+                          <Link to={`/product/${item.id}`} className="font-bold hover:text-primary transition-colors line-clamp-2 mb-1 text-right">
                             {item.name}
                           </Link>
-                          <p className="text-xs text-muted-foreground mb-2">القسم: {item.category}</p>
-                          <button className="text-xs text-destructive font-medium flex items-center gap-1 hover:underline w-max">
+                          {/* <p className="text-xs text-muted-foreground mb-2">القسم: {item.category}</p> */}
+                          <button 
+                            onClick={() => remove(item.id)}
+                            className="text-xs text-destructive font-medium flex items-center gap-1 hover:underline w-max"
+                          >
                             <Trash2 className="w-3.5 h-3.5" />
                             حذف
                           </button>
@@ -70,17 +77,23 @@ function CartPage() {
                       </div>
                       
                       <div className="hidden md:block col-span-2 text-center font-semibold">
-                        {item.price} ل.ت
+                        {item.price} {currency}
                       </div>
                       
                       <div className="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center">
                         <span className="md:hidden font-semibold text-sm">الكمية:</span>
                         <div className="flex items-center border rounded-lg overflow-hidden w-24">
-                          <button className="w-8 h-8 flex items-center justify-center bg-secondary/50 hover:bg-secondary transition">
+                          <button 
+                            onClick={() => setQty(item.id, item.quantity - 1)}
+                            className="w-8 h-8 flex items-center justify-center bg-secondary/50 hover:bg-secondary transition"
+                          >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
                           <span className="flex-1 text-center text-sm font-bold">{item.quantity}</span>
-                          <button className="w-8 h-8 flex items-center justify-center bg-secondary/50 hover:bg-secondary transition">
+                          <button 
+                            onClick={() => setQty(item.id, item.quantity + 1)}
+                            className="w-8 h-8 flex items-center justify-center bg-secondary/50 hover:bg-secondary transition"
+                          >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -88,7 +101,7 @@ function CartPage() {
                       
                       <div className="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center font-bold text-primary">
                         <span className="md:hidden text-foreground text-sm">المجموع:</span>
-                        <span>{item.price * item.quantity} ل.ت</span>
+                        <span>{item.price * item.quantity} {currency}</span>
                       </div>
                     </div>
                   ))}
@@ -110,18 +123,18 @@ function CartPage() {
                 <div className="space-y-4 mb-6 text-sm">
                   <div className="flex justify-between text-muted-foreground">
                     <span>المجموع الفرعي</span>
-                    <span className="font-medium text-foreground">{subtotal} ل.ت</span>
+                    <span className="font-medium text-foreground">{subtotal} {currency}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>رسوم الشحن</span>
                     <span className="font-medium text-foreground">
-                      {shipping === 0 ? <span className="text-emerald-600 font-bold">مجاني</span> : `${shipping} ل.ت`}
+                      {shipping === 0 ? <span className="text-emerald-600 font-bold">مجاني</span> : `${shipping} ${currency}`}
                     </span>
                   </div>
-                  {shipping > 0 && (
+                  {shipping > 0 && freeThreshold > 0 && (
                     <div className="bg-primary/10 text-primary text-xs p-3 rounded-lg flex items-start gap-2">
                       <ShoppingBag className="w-4 h-4 shrink-0" />
-                      <p>أضف منتجات بقيمة {500 - subtotal} ل.ت للحصول على شحن مجاني!</p>
+                      <p>أضف منتجات بقيمة {freeThreshold - subtotal} {currency} للحصول على شحن مجاني!</p>
                     </div>
                   )}
                 </div>
@@ -130,7 +143,7 @@ function CartPage() {
                   <div className="flex justify-between items-end">
                     <span className="font-bold text-lg font-ethno uppercase">Total</span>
                     <div className="text-left">
-                      <span className="font-black text-2xl text-primary">{total} ل.ت</span>
+                      <span className="font-black text-2xl text-primary">{total} {currency}</span>
                       <p className="text-[10px] text-muted-foreground">شامل ضريبة القيمة المضافة</p>
                     </div>
                   </div>

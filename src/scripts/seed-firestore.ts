@@ -10,6 +10,9 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, collection, getDocs, serverTimestamp } from "firebase/firestore";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY!,

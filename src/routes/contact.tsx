@@ -1,4 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { toast } from "sonner";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
@@ -15,6 +19,35 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage() {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email) {
+      toast.error("الرجاء تعبئة الحقول المطلوبة");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "contacts"), {
+        ...formData,
+        createdAt: serverTimestamp(),
+      });
+      toast.success("تم إرسال رسالتك بنجاح، سنقوم بالرد عليك قريباً");
+      setFormData({ name: "", email: "", message: "" });
+    } catch (error) {
+      toast.error("حدث خطأ أثناء الإرسال، يرجى المحاولة لاحقاً");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -39,21 +72,41 @@ function ContactPage() {
         <div className="bg-secondary/50 rounded-lg p-8">
           <h2 className="text-2xl font-bold mb-2">تواصل معنا</h2>
           <p className="text-sm text-muted-foreground mb-6">إذا أردت التواصل معنا مباشرة، الرجاء تعبئة النموذج أدناه:</p>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="text-sm font-semibold block mb-1.5">الاسم</label>
-              <input className="w-full border rounded px-4 py-3 bg-background outline-none focus:border-primary" />
+              <input 
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                className="w-full border rounded px-4 py-3 bg-background outline-none focus:border-primary" 
+              />
             </div>
             <div>
               <label className="text-sm font-semibold block mb-1.5">البريد الإلكتروني</label>
-              <input type="email" className="w-full border rounded px-4 py-3 bg-background outline-none focus:border-primary" />
+              <input 
+                required
+                type="email" 
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className="w-full border rounded px-4 py-3 bg-background outline-none focus:border-primary" 
+              />
             </div>
             <div>
               <label className="text-sm font-semibold block mb-1.5">رسالتك (اختياري)</label>
-              <textarea rows={5} className="w-full border rounded px-4 py-3 bg-background outline-none focus:border-primary" />
+              <textarea 
+                rows={5} 
+                value={formData.message}
+                onChange={(e) => setFormData({...formData, message: e.target.value})}
+                className="w-full border rounded px-4 py-3 bg-background outline-none focus:border-primary" 
+              />
             </div>
-            <button type="button" className="bg-primary text-primary-foreground font-bold uppercase px-8 py-3 rounded">
-              إرسال
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="bg-primary text-primary-foreground font-bold uppercase px-8 py-3 rounded disabled:opacity-50"
+            >
+              {loading ? "جاري الإرسال..." : "إرسال"}
             </button>
           </form>
         </div>

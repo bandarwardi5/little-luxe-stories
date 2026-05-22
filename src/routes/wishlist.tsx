@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
-import { products } from "@/lib/products";
+import { useWishlist } from "@/lib/wishlist-context";
 import { Heart, HeartCrack, ShoppingBag } from "lucide-react";
 
 export const Route = createFileRoute("/wishlist")({
@@ -16,11 +16,10 @@ export const Route = createFileRoute("/wishlist")({
 });
 
 function WishlistPage() {
-  // Mock wishlist data (using some products)
-  const wishlistItems = products.slice(1, 4);
+  const { items: wishlistItems, remove } = useWishlist();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col text-right" dir="rtl">
       <Header />
 
       <div className="bg-secondary/30 py-10 border-b">
@@ -40,7 +39,10 @@ function WishlistPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {wishlistItems.map((product) => (
               <div key={product.id} className="relative group">
-                <button className="absolute top-2 left-2 z-20 w-8 h-8 bg-white/80 hover:bg-white backdrop-blur rounded-full flex items-center justify-center text-destructive shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                  onClick={() => remove(product.id)}
+                  className="absolute top-2 left-2 z-20 w-8 h-8 bg-white/80 hover:bg-white backdrop-blur rounded-full flex items-center justify-center text-destructive shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                >
                   <HeartCrack className="w-4 h-4" />
                 </button>
                 <ProductCard product={product} />

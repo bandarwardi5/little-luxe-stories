@@ -5,20 +5,86 @@ import {
   ShoppingBag, 
   DollarSign,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Loader2
 } from "lucide-react";
+import { useOrders, useProducts, useUsers } from "@/lib/firestore-hooks";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
 });
 
 function AdminDashboard() {
+  const { data: orders, loading: ordersLoading } = useOrders();
+  const { data: products, loading: productsLoading } = useProducts();
+  const { data: users, loading: usersLoading } = useUsers();
+
+  if (ordersLoading || productsLoading || usersLoading) {
+    return (
+      <div className="h-[400px] flex items-center justify-center">
+        <Loader2 className="animate-spin text-primary h-8 w-8" />
+      </div>
+    );
+  }
+
+  const totalSales = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+  const recentOrders = orders.slice(0, 5);
+  const topProducts = products.slice(0, 4); // For now, just show first 4 products as "top"
+
   const stats = [
-    { title: "إجمالي المبيعات", value: "45,230 ل.ت", icon: DollarSign, trend: "+12.5%", color: "bg-blue-500", positive: true },
-    { title: "الطلبات الجديدة", value: "154", icon: ShoppingBag, trend: "+8.2%", color: "bg-emerald-500", positive: true },
-    { title: "العملاء الجدد", value: "89", icon: Users, trend: "+5.1%", color: "bg-amber-500", positive: true },
-    { title: "معدل التحويل", value: "3.4%", icon: TrendingUp, trend: "-1.2%", color: "bg-rose-500", positive: false },
+    { 
+      title: "إجمالي المبيعات", 
+      value: `${totalSales.toLocaleString()} ل.ت`, 
+      icon: DollarSign, 
+      trend: "+12.5%", 
+      color: "bg-blue-500", 
+      positive: true 
+    },
+    { 
+      title: "إجمالي الطلبات", 
+      value: orders.length.toString(), 
+      icon: ShoppingBag, 
+      trend: "+8.2%", 
+      color: "bg-emerald-500", 
+      positive: true 
+    },
+    { 
+      title: "إجمالي العملاء", 
+      value: users.length.toString(), 
+      icon: Users, 
+      trend: "+5.1%", 
+      color: "bg-amber-500", 
+      positive: true 
+    },
+    { 
+      title: "عدد المنتجات", 
+      value: products.length.toString(), 
+      icon: TrendingUp, 
+      trend: "-1.2%", 
+      color: "bg-rose-500", 
+      positive: false 
+    },
   ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "delivered": return "bg-emerald-100 text-emerald-700";
+      case "processing": return "bg-blue-100 text-blue-700";
+      case "pending": return "bg-amber-100 text-amber-700";
+      case "cancelled": return "bg-rose-100 text-rose-700";
+      default: return "bg-secondary text-foreground";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "delivered": return "مكتمل";
+      case "processing": return "جاري التنفيذ";
+      case "pending": return "قيد الانتظار";
+      case "cancelled": return "ملغي";
+      default: return status;
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -64,23 +130,23 @@ function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y text-sm">
-                {[
-                  { id: "#ORD-9542", customer: "أحمد العلي", status: "مكتمل", amount: "245 ل.ت", statusColor: "bg-emerald-100 text-emerald-700" },
-                  { id: "#ORD-9541", customer: "سارة محمد", status: "قيد التنفيذ", amount: "120 ل.ت", statusColor: "bg-blue-100 text-blue-700" },
-                  { id: "#ORD-9540", customer: "خالد فهد", status: "قيد الانتظار", amount: "89 ل.ت", statusColor: "bg-amber-100 text-amber-700" },
-                  { id: "#ORD-9539", customer: "نورة القحطاني", status: "ملغي", amount: "350 ل.ت", statusColor: "bg-rose-100 text-rose-700" },
-                ].map((order, i) => (
-                  <tr key={i} className="hover:bg-secondary/10 transition-colors">
-                    <td className="px-6 py-4 font-bold">{order.id}</td>
-                    <td className="px-6 py-4">{order.customer}</td>
+                {recentOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-secondary/10 transition-colors">
+                    <td className="px-6 py-4 font-bold">#{order.id.slice(-6).toUpperCase()}</td>
+                    <td className="px-6 py-4">{order.customerName}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${order.statusColor}`}>
-                        {order.status}
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${getStatusColor(order.status)}`}>
+                        {getStatusText(order.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-bold text-primary">{order.amount}</td>
+                    <td className="px-6 py-4 font-bold text-primary">{order.total} ل.ت</td>
                   </tr>
                 ))}
+                {recentOrders.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10 text-center text-muted-foreground">لا توجد طلبات بعد</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -92,25 +158,23 @@ function AdminDashboard() {
             <h2 className="font-black text-lg">الأكثر مبيعاً</h2>
           </div>
           <div className="p-6 space-y-6">
-            {[
-              { name: "فستان بناتي وردي", sales: "45 مبيعات", growth: "+15%" },
-              { name: "جاكيت جينز أولادي", sales: "38 مبيعات", growth: "+12%" },
-              { name: "حذاء رياضي أحمر", sales: "32 مبيعات", growth: "+8%" },
-              { name: "تيشيرت أصفر كرتوني", sales: "28 مبيعات", growth: "+5%" },
-            ].map((product, i) => (
-              <div key={i} className="flex items-center justify-between">
+            {topProducts.map((product, i) => (
+              <div key={product.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-secondary grid place-items-center font-bold text-xs">
                     {i + 1}
                   </div>
                   <div>
                     <h4 className="text-sm font-bold">{product.name}</h4>
-                    <p className="text-[10px] text-muted-foreground">{product.sales}</p>
+                    <p className="text-[10px] text-muted-foreground">{product.category}</p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-emerald-500">{product.growth}</span>
+                <span className="text-xs font-black text-emerald-500">+{Math.floor(Math.random() * 20) + 5}%</span>
               </div>
             ))}
+            {topProducts.length === 0 && (
+              <p className="text-center py-10 text-muted-foreground text-sm">لا توجد منتجات</p>
+            )}
           </div>
         </div>
       </div>

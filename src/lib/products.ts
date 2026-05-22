@@ -7,22 +7,13 @@ import p6 from "@/assets/product-6.jpg";
 import p7 from "@/assets/product-7.jpg";
 import p8 from "@/assets/product-8.jpg";
 
-export type Product = {
-  id: number;
-  name: string;
-  price: number;
-  oldPrice?: number;
-  rating?: number;
-  image: string;
-  category: string;
-  badge?: string;
-  description: string;
-  inStock: number;
-};
+import { FsProduct } from "./firestore-hooks";
+
+export type Product = FsProduct;
 
 export const products: Product[] = [
   {
-    id: 1,
+    id: "1",
     name: "تيشيرت أصفر بطبعة كرتونية",
     price: 49,
     image: p1,
@@ -31,7 +22,7 @@ export const products: Product[] = [
     inStock: 15,
   },
   {
-    id: 2,
+    id: "2",
     name: "حذاء بناتي وردي بفيونكة",
     price: 65,
     oldPrice: 95,
@@ -41,7 +32,7 @@ export const products: Product[] = [
     inStock: 8,
   },
   {
-    id: 3,
+    id: "3",
     name: "جاكيت جينز أولادي عصري",
     price: 145,
     image: p3,
@@ -50,7 +41,7 @@ export const products: Product[] = [
     inStock: 12,
   },
   {
-    id: 4,
+    id: "4",
     name: "فستان بناتي وردي بنقشة الورود",
     price: 89,
     oldPrice: 125,
@@ -60,7 +51,7 @@ export const products: Product[] = [
     inStock: 5,
   },
   {
-    id: 5,
+    id: "5",
     name: "حذاء رياضي أحمر للأطفال",
     price: 175,
     oldPrice: 199,
@@ -70,7 +61,7 @@ export const products: Product[] = [
     inStock: 20,
   },
   {
-    id: 6,
+    id: "6",
     name: "أفرول رضع مخطط بألوان الباستيل",
     price: 79,
     image: p6,
@@ -79,7 +70,7 @@ export const products: Product[] = [
     inStock: 25,
   },
   {
-    id: 7,
+    id: "7",
     name: "هودي بناتي وردي بطبعة يونيكورن",
     price: 119,
     oldPrice: 145,
@@ -89,7 +80,7 @@ export const products: Product[] = [
     inStock: 10,
   },
   {
-    id: 8,
+    id: "8",
     name: "قميص أولادي مربعات أزرق",
     price: 95,
     image: p8,

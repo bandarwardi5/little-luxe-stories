@@ -7,36 +7,38 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/login")({
-  component: LoginPage,
+export const Route = createFileRoute("/signup")({
+  component: SignupPage,
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول | Treemass" },
-      { name: "description", content: "سجل دخولك لحسابك في متجر Treemass وتمتع بتجربة تسوق فريدة في إسطنبول." },
+      { title: "إنشاء حساب جديد | Treemass" },
+      { name: "description", content: "أنشئ حساباً جديداً في متجر Treemass وتمتع بكافة المزايا." },
     ],
   }),
 });
 
-function LoginPage() {
+function SignupPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, signInGoogle } = useAuth();
+  const { signUp, signInGoogle } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!name || !email || !password) {
       toast.error("يرجى ملء جميع الحقول");
       return;
     }
     setLoading(true);
     try {
-      await signIn(email, password);
-      toast.success("تم تسجيل الدخول بنجاح");
+      await signUp(name, email, password);
+      toast.success("تم إنشاء الحساب بنجاح");
       navigate({ to: "/" });
     } catch (error: any) {
-      toast.error("فشل تسجيل الدخول، يرجى التأكد من البيانات");
+      console.error(error);
+      toast.error(error.message || "فشل إنشاء الحساب");
     } finally {
       setLoading(false);
     }
@@ -57,12 +59,12 @@ function LoginPage() {
       <Header />
 
       <div className="flex-1 flex">
-        <div className="hidden lg:block w-1/2 relative bg-banner-peach overflow-hidden">
-          <img src={pageHeader} alt="تسجيل الدخول" className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80" />
+        <div className="hidden lg:block w-1/2 relative bg-banner-mint overflow-hidden">
+          <img src={pageHeader} alt="إنشاء حساب" className="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-transparent flex flex-col justify-center p-16">
-            <h2 className="text-4xl font-extrabold mb-6 text-foreground font-ethno uppercase">Welcome to Treemass</h2>
+            <h2 className="text-4xl font-extrabold mb-6 text-foreground font-ethno uppercase">Join Treemass Family</h2>
             <p className="text-lg text-muted-foreground max-w-md">
-              انضم إلينا واستمتع بتجربة تسوق مميزة، خصومات حصرية، ومتابعة سهلة لطلباتك.
+              أنشئ حسابك اليوم واكتشف عالم الأناقة لأطفالك مع عروض حصرية وخدمة متميزة.
             </p>
           </div>
         </div>
@@ -70,11 +72,27 @@ function LoginPage() {
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16">
           <div className="w-full max-w-md">
             <div className="text-center mb-10">
-              <h1 className="text-3xl font-bold mb-2">تسجيل الدخول</h1>
-              <p className="text-muted-foreground">أدخل بياناتك للوصول إلى حسابك</p>
+              <h1 className="text-3xl font-bold mb-2">إنشاء حساب جديد</h1>
+              <p className="text-muted-foreground">انضم إلينا وابدأ رحلة التسوق</p>
             </div>
 
-            <form className="space-y-5" onSubmit={handleLogin}>
+            <form className="space-y-5" onSubmit={handleSignup}>
+              <div>
+                <label className="text-sm font-semibold block mb-2">الاسم الكامل</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="الاسم الكامل"
+                    className="w-full border rounded-lg pl-4 pr-11 py-3 bg-background outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="text-sm font-semibold block mb-2">البريد الإلكتروني</label>
                 <div className="relative">
@@ -92,10 +110,7 @@ function LoginPage() {
               </div>
 
               <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-semibold">كلمة المرور</label>
-                  <Link to="/reset-password" id="forgot-password" className="text-xs text-primary font-medium hover:underline">نسيت كلمة المرور؟</Link>
-                </div>
+                <label className="text-sm font-semibold block mb-2">كلمة المرور</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
                     <Lock className="w-5 h-5" />
@@ -110,18 +125,13 @@ function LoginPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="remember" className="w-4 h-4 rounded text-primary focus:ring-primary" />
-                <label htmlFor="remember" className="text-sm cursor-pointer select-none">تذكرني</label>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-lg shadow-sm hover:opacity-90 transition flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-                تسجيل الدخول
+                إنشاء حساب
               </button>
             </form>
 
@@ -130,7 +140,7 @@ function LoginPage() {
                 <div className="w-full border-t border-muted"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-background text-muted-foreground">أو سجل دخول عبر</span>
+                <span className="px-2 bg-background text-muted-foreground">أو سجل عبر</span>
               </div>
             </div>
 
@@ -155,7 +165,7 @@ function LoginPage() {
             </div>
 
             <p className="text-center text-sm text-muted-foreground mt-8">
-              ليس لديك حساب؟ <Link to="/signup" className="text-primary font-bold hover:underline">إنشاء حساب جديد</Link>
+              لديك حساب بالفعل؟ <Link to="/login" className="text-primary font-bold hover:underline">تسجيل الدخول</Link>
             </p>
           </div>
         </div>

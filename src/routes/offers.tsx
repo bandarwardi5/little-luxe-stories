@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
-import { products } from "@/lib/products";
-import { Sparkles, Percent, Tag } from "lucide-react";
+import { useProducts } from "@/lib/firestore-hooks";
+import { Sparkles, Percent, Tag, Loader2 } from "lucide-react";
 import pageHeader from "@/assets/page-header-baby.jpg";
 
 export const Route = createFileRoute("/offers")({
@@ -17,10 +17,19 @@ export const Route = createFileRoute("/offers")({
 });
 
 function OffersPage() {
+  const { data: products, loading } = useProducts();
   const offerProducts = products.filter(p => p.oldPrice);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col text-right" dir="rtl">
       <Header />
 
       <div className="relative bg-banner-peach overflow-hidden">

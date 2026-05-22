@@ -2,9 +2,17 @@ import { Link } from "@tanstack/react-router";
 import { Search, User, Heart, ShoppingBag, Sparkles, Menu, X } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { useState } from "react";
+import { useCart } from "@/lib/cart-context";
+import { useWishlist } from "@/lib/wishlist-context";
+import { useSettings } from "@/lib/firestore-hooks";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { count: cartCount, total: cartTotal } = useCart();
+  const { items: wishlistItems } = useWishlist();
+  const { settings } = useSettings();
+
+  const currency = settings?.currency || "ل.ت";
 
   return (
     <header className="w-full relative">
@@ -12,14 +20,13 @@ export function Header() {
       <div className="bg-primary text-primary-foreground text-xs">
         <div className="container mx-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2">
           <p className="text-center sm:text-right w-full sm:w-auto">
-            شحن مجاني لجميع الطلبات فوق 500 ل.ت{" "}
+            {settings?.shippingFee === 0 ? "شحن مجاني لجميع الطلبات!" : `شحن مجاني للطلبات فوق ${settings?.freeShippingThreshold || 500} ${currency}`}
+            {" "}
             <Link to="/shop" className="underline font-semibold">تسوق الآن</Link>
           </p>
           <nav className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1 w-full sm:w-auto">
             <Link to="/about">من نحن</Link>
-            <Link to="/blog">المدونة</Link>
             <Link to="/contact">اتصل بنا</Link>
-            <Link to="/faqs">الأسئلة الشائعة</Link>
           </nav>
         </div>
       </div>
@@ -41,16 +48,9 @@ export function Header() {
           </div>
 
           <div className="flex-1 hidden md:flex items-stretch rounded-md border bg-secondary overflow-hidden">
-            <select className="bg-secondary px-3 text-sm border-l outline-none">
-              <option>كل الأقسام</option>
-              <option>أولاد</option>
-              <option>بنات</option>
-              <option>رضع</option>
-              <option>أحذية</option>
-            </select>
             <input
               placeholder="ابحث عن منتج..."
-              className="flex-1 bg-transparent px-3 text-sm outline-none"
+              className="flex-1 bg-transparent px-4 text-sm outline-none"
             />
             <button className="bg-primary text-primary-foreground px-4">
               <Search className="h-4 w-4" />
@@ -61,22 +61,30 @@ export function Header() {
             <Link to="/login" className="flex items-center gap-2 hover:text-primary transition-colors">
               <User className="h-5 w-5" />
               <span className="hidden sm:flex flex-col leading-tight text-right">
-                <span className="text-xs text-muted-foreground">تسجيل الدخول</span>
-                <span className="font-semibold">حسابي</span>
+                <span className="text-xs text-muted-foreground font-cairo">حسابي</span>
+                <span className="font-bold">دخول</span>
               </span>
             </Link>
-            <Link to="/wishlist" className="relative hover:text-primary transition-colors">
-              <Heart className="h-5 w-5" />
-              <span className="absolute -top-2 -left-2 bg-primary text-primary-foreground text-[10px] rounded-full h-4 w-4 grid place-items-center">0</span>
+            <Link to="/wishlist" className="relative hover:text-primary transition-colors group">
+              <Heart className="h-5 w-5 group-hover:scale-110 transition-transform" />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-2 -left-2 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4 w-4 grid place-items-center animate-in zoom-in">
+                  {wishlistItems.length}
+                </span>
+              )}
             </Link>
-            <Link to="/cart" className="flex items-center gap-2 hover:text-primary transition-colors">
+            <Link to="/cart" className="flex items-center gap-2 hover:text-primary transition-colors group">
               <div className="relative">
-                <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -top-2 -left-2 bg-primary text-primary-foreground text-[10px] rounded-full h-4 w-4 grid place-items-center">0</span>
+                <ShoppingBag className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -left-2 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4 w-4 grid place-items-center animate-in zoom-in">
+                    {cartCount}
+                  </span>
+                )}
               </div>
               <span className="hidden sm:flex flex-col leading-tight text-right">
-                <span className="text-xs text-muted-foreground">0.00 ل.ت</span>
-                <span className="font-semibold">سلتي</span>
+                <span className="text-xs text-muted-foreground font-cairo">{cartTotal} {currency}</span>
+                <span className="font-bold">سلتي</span>
               </span>
             </Link>
           </div>
@@ -89,14 +97,6 @@ export function Header() {
           <nav className="flex flex-nowrap items-center gap-4 md:gap-6 font-semibold whitespace-nowrap">
             <Link to="/" activeProps={{ className: "text-primary" }} className="hover:text-primary transition-colors">الرئيسية</Link>
             <Link to="/shop" activeProps={{ className: "text-primary" }} className="hover:text-primary transition-colors">المتجر</Link>
-            <Link to="/shop" className="flex items-center gap-1 hover:text-primary transition-colors">
-              الأقسام
-              <span className="bg-emerald-500 text-white text-[10px] px-1.5 rounded">تخفيض</span>
-            </Link>
-            <Link to="/shop" className="flex items-center gap-1 hover:text-primary transition-colors">
-              المنتجات
-              <span className="bg-primary text-primary-foreground text-[10px] px-1.5 rounded">جديد</span>
-            </Link>
             <Link to="/offers" activeProps={{ className: "text-primary" }} className="hover:text-primary transition-colors">أفضل العروض</Link>
           </nav>
           <Link to="/offers" className="flex items-center gap-2 text-primary font-semibold hover:opacity-80 transition-opacity">
@@ -160,26 +160,6 @@ export function Header() {
               </li>
               <li>
                 <Link 
-                  to="/shop" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-secondary font-semibold transition-colors"
-                >
-                  <span>الأقسام</span>
-                  <span className="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded">تخفيض</span>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/shop" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-secondary font-semibold transition-colors"
-                >
-                  <span>المنتجات</span>
-                  <span className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded">جديد</span>
-                </Link>
-              </li>
-              <li>
-                <Link 
                   to="/offers" 
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-secondary font-semibold transition-colors"
@@ -188,24 +168,13 @@ export function Header() {
                   أفضل العروض
                 </Link>
               </li>
-              <li>
-                <Link 
-                  to="/offers" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-2 px-4 py-3 rounded-lg text-primary hover:bg-primary/5 font-bold transition-colors"
-                >
-                  <Sparkles className="h-4 w-4" /> عروض اليوم
-                </Link>
-              </li>
             </ul>
 
             <div className="mt-8 pt-8 border-t px-4 space-y-4">
               <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">المزيد</h4>
               <ul className="space-y-3 text-sm">
                 <li><Link to="/about" onClick={() => setIsMenuOpen(false)}>من نحن</Link></li>
-                <li><Link to="/blog" onClick={() => setIsMenuOpen(false)}>المدونة</Link></li>
                 <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>اتصل بنا</Link></li>
-                <li><Link to="/faqs" onClick={() => setIsMenuOpen(false)}>الأسئلة الشائعة</Link></li>
               </ul>
             </div>
           </nav>
@@ -214,3 +183,4 @@ export function Header() {
     </header>
   );
 }
+

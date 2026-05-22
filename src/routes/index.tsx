@@ -2,7 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
-import { products, categories } from "@/lib/products";
+import {
+  useProducts,
+  useCategories,
+  useBanners,
+  useHero,
+} from "@/lib/firestore-hooks";
 import {
   Carousel,
   CarouselContent,
@@ -15,15 +20,31 @@ import heroKids from "@/assets/hero-kids.jpg";
 import bannerBoys from "@/assets/banner-boys.jpg";
 import bannerGirls from "@/assets/banner-girls.jpg";
 import pageHeaderBaby from "@/assets/page-header-baby.jpg";
-import { Truck, ShieldCheck, Tag, Headphones } from "lucide-react";
+import { Truck, ShieldCheck, Tag, Headphones, Loader2 } from "lucide-react";
+import { imageUrl } from "@/lib/firebase";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
+  const { data: products, loading: productsLoading } = useProducts();
+  const { data: categories, loading: categoriesLoading } = useCategories();
+  const { data: banners, loading: bannersLoading } = useBanners();
+  const { data: heroItems, loading: heroLoading } = useHero();
+
+  if (productsLoading || categoriesLoading || bannersLoading || heroLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const activeBanners = banners.filter(b => b.active !== false);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-right" dir="rtl">
       <Header />
 
       {/* Hero Slider */}
@@ -34,69 +55,55 @@ function Index() {
           className="w-full relative rounded-xl overflow-hidden group"
         >
           <CarouselContent className="ml-0">
-            {/* Slide 1 */}
-            <CarouselItem className="pl-0 relative min-h-[400px] md:min-h-[500px] flex items-center bg-banner-pink">
-              <img
-                src={heroKids}
-                alt="Treemass Fashion"
-                className="absolute inset-0 w-full h-full object-cover opacity-90"
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-white/80 via-white/40 to-transparent"></div>
-              <div className="relative z-10 px-6 md:px-16 max-w-lg ml-auto text-right">
-                <p className="text-xs md:text-base tracking-widest text-primary font-bold mb-3 drop-shadow-sm">TREEMASS FASHION</p>
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 text-foreground drop-shadow-md">
-                  مجموعة ملابس الأطفال الجديدة
-                </h1>
-                <Link
-                  to="/shop"
-                  className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-md font-bold text-sm hover:scale-105 transition-transform shadow-lg"
-                >
-                  تسوق التشكيلة كاملة
-                </Link>
-              </div>
-            </CarouselItem>
-
-            {/* Slide 2 */}
-            {/* <CarouselItem className="pl-0 relative min-h-[400px] md:min-h-[500px] flex items-center bg-banner-mint text-right">
-              <img
-                src={bannerBoys}
-                alt="ملابس أولاد عصرية"
-                className="absolute inset-0 w-full h-full object-cover opacity-80"
-              />
-              <div className="relative z-10 px-8 md:px-16 max-w-lg ml-auto bg-gradient-to-l from-white/60 to-transparent h-full flex flex-col justify-center">
-                <p className="text-sm md:text-base tracking-widest text-primary font-bold mb-3 font-ethno uppercase">FOR BOYS</p>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 text-foreground">
-                  ملابس أولاد عصرية وعملية
-                </h1>
-                <Link
-                  to="/shop"
-                  className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-md font-bold text-sm hover:scale-105 transition-transform shadow-lg w-max"
-                >
-                  اكتشف الجديد
-                </Link>
-              </div>
-            </CarouselItem> */}
-
-            {/* Slide 3 */}
-            {/* <CarouselItem className="pl-0 relative min-h-[400px] md:min-h-[500px] flex items-center bg-banner-peach text-right">
-              <img
-                src={bannerGirls}
-                alt="فساتين بنات أنيقة"
-                className="absolute inset-0 w-full h-full object-cover opacity-80"
-              />
-              <div className="relative z-10 px-8 md:px-16 max-w-lg ml-auto bg-gradient-to-l from-white/60 to-transparent h-full flex flex-col justify-center">
-                <p className="text-sm md:text-base tracking-widest text-primary font-bold mb-3 font-ethno uppercase">FOR GIRLS</p>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 text-foreground">
-                  فساتين بنات أنيقة لكل المناسبات
-                </h1>
-                <Link
-                  to="/shop"
-                  className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-md font-bold text-sm hover:scale-105 transition-transform shadow-lg w-max"
-                >
-                  تسوقي الآن
-                </Link>
-              </div>
-            </CarouselItem> */}
+            {heroItems.length > 0 ? (
+              heroItems.map((item) => (
+                <CarouselItem key={item.id} className="pl-0 relative min-h-[400px] md:min-h-[600px] flex items-center bg-secondary/20">
+                  <img
+                    src={imageUrl(item.image)}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-l from-white/90 via-white/40 to-transparent"></div>
+                  <div className="relative z-10 px-6 md:px-16 max-w-2xl ml-auto text-right">
+                    <p className="text-xs md:text-lg tracking-[0.2em] text-primary font-black mb-4 uppercase">
+                      {item.subtitle || "NEW COLLECTION"}
+                    </p>
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] mb-8 text-foreground">
+                      {item.title}
+                    </h1>
+                    {item.ctaText && (
+                      <Link
+                        to={item.ctaLink || "/shop"}
+                        className="inline-flex items-center justify-center bg-primary text-primary-foreground px-10 py-5 rounded-xl font-black text-sm hover:scale-105 transition-transform shadow-xl shadow-primary/20"
+                      >
+                        {item.ctaText}
+                      </Link>
+                    )}
+                  </div>
+                </CarouselItem>
+              ))
+            ) : (
+              <CarouselItem className="pl-0 relative min-h-[400px] md:min-h-[500px] flex items-center bg-banner-pink">
+                <img
+                  src={heroKids}
+                  alt="Treemass Fashion"
+                  className="absolute inset-0 w-full h-full object-cover opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-l from-white/80 via-white/40 to-transparent"></div>
+                <div className="relative z-10 px-6 md:px-16 max-w-lg ml-auto text-right">
+                  <p className="text-xs md:text-base tracking-widest text-primary font-bold mb-3 drop-shadow-sm">TREEMASS FASHION</p>
+                  <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 text-foreground drop-shadow-md">
+                    مجموعة ملابس الأطفال الجديدة
+                  </h1>
+                  <Link
+                    to="/shop"
+                    className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-md font-bold text-sm hover:scale-105 transition-transform shadow-lg"
+                  >
+                    تسوق التشكيلة كاملة
+                  </Link>
+                </div>
+              </CarouselItem>
+            )}
           </CarouselContent>
           
           <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -113,17 +120,18 @@ function Index() {
           <p className="text-xs tracking-widest text-primary font-bold mb-2 text-center uppercase font-ethno">Categories</p>
           <h2 className="text-3xl font-extrabold mb-10 text-center font-ethno">أقسامنا الرئيسية</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {categories.map((c, i) => (
+            {categories.map((c) => (
               <Link
-                key={c.name}
+                key={c.id}
                 to="/shop"
-                className={`${c.color} rounded-2xl p-4 md:p-6 flex flex-col items-center text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border-2 border-transparent hover:border-white/50`}
+                search={{ category: c.name }}
+                className={`${c.color || 'bg-white'} rounded-2xl p-4 md:p-6 flex flex-col items-center text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border-2 border-transparent hover:border-white/50`}
               >
                 <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-white/80 backdrop-blur-sm mb-4 grid place-items-center overflow-hidden shadow-sm">
-                  <img src={products[i].image} alt={c.name} className="w-full h-full object-contain p-2 hover:scale-110 transition-transform" />
+                  <img src={imageUrl(c.image)} alt={c.name} className="w-full h-full object-contain p-2 hover:scale-110 transition-transform" />
                 </div>
                 <h3 className="font-extrabold text-base md:text-lg mb-1 text-foreground/90">{c.name}</h3>
-                <p className="text-[10px] md:text-xs font-semibold text-foreground/60 bg-white/40 px-3 py-1 rounded-full mt-2">{c.count} منتجات</p>
+                <p className="text-[10px] md:text-xs font-semibold text-foreground/60 bg-white/40 px-3 py-1 rounded-full mt-2">{c.count || 0} منتجات</p>
               </Link>
             ))}
           </div>
