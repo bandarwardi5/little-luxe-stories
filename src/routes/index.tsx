@@ -22,6 +22,7 @@ import bannerGirls from "@/assets/banner-girls.jpg";
 import pageHeaderBaby from "@/assets/page-header-baby.jpg";
 import { Truck, ShieldCheck, Tag, Headphones, Loader2 } from "lucide-react";
 import { imageUrl } from "@/lib/firebase";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -32,6 +33,7 @@ function Index() {
   const { data: categories, loading: categoriesLoading } = useCategories();
   const { data: banners, loading: bannersLoading } = useBanners();
   const { data: heroItems, loading: heroLoading } = useHero();
+  const { t, tl, dir } = useLang();
 
   if (productsLoading || categoriesLoading || bannersLoading || heroLoading) {
     return (
@@ -44,7 +46,7 @@ function Index() {
   const activeBanners = banners.filter(b => b.active !== false);
 
   return (
-    <div className="min-h-screen bg-background text-right" dir="rtl">
+    <div className="min-h-screen bg-background" dir={dir}>
       <Header />
 
       {/* Hero Slider */}
@@ -60,23 +62,23 @@ function Index() {
                 <CarouselItem key={item.id} className="pl-0 relative min-h-[400px] md:min-h-[600px] flex items-center bg-secondary/20">
                   <img
                     src={imageUrl(item.image)}
-                    alt={item.title}
+                    alt={tl(item.title)}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-l from-white/90 via-white/40 to-transparent"></div>
-                  <div className="relative z-10 px-6 md:px-16 max-w-2xl ml-auto text-right">
+                  <div className={`absolute inset-0 bg-gradient-to-${dir === "rtl" ? "l" : "r"} from-white/90 via-white/40 to-transparent`}></div>
+                  <div className="relative z-10 px-6 md:px-16 max-w-2xl ms-auto">
                     <p className="text-xs md:text-lg tracking-[0.2em] text-primary font-black mb-4 uppercase">
-                      {item.subtitle || "NEW COLLECTION"}
+                      {tl(item.subtitle) || "NEW COLLECTION"}
                     </p>
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] mb-8 text-foreground">
-                      {item.title}
+                      {tl(item.title)}
                     </h1>
                     {item.ctaText && (
                       <Link
                         to={item.ctaLink || "/shop"}
                         className="inline-flex items-center justify-center bg-primary text-primary-foreground px-10 py-5 rounded-xl font-black text-sm hover:scale-105 transition-transform shadow-xl shadow-primary/20"
                       >
-                        {item.ctaText}
+                        {tl(item.ctaText)}
                       </Link>
                     )}
                   </div>
@@ -117,23 +119,26 @@ function Index() {
       <section className="relative px-4 py-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-banner-pink/50 to-transparent"></div>
         <div className="container mx-auto relative z-10">
-          <p className="text-xs tracking-widest text-primary font-bold mb-2 text-center uppercase font-ethno">Categories</p>
-          <h2 className="text-3xl font-extrabold mb-10 text-center font-ethno">أقسامنا الرئيسية</h2>
+          <p className="text-xs tracking-widest text-primary font-bold mb-2 text-center uppercase font-ethno">{t("home.categories.pretitle")}</p>
+          <h2 className="text-3xl font-extrabold mb-10 text-center font-ethno">{t("home.categories.title")}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {categories.map((c) => (
+            {categories.map((c) => {
+              const catName = tl(c.name);
+              return (
               <Link
                 key={c.id}
                 to="/shop"
-                search={{ category: c.name }}
+                search={{ category: typeof c.name === "string" ? c.name : (c.name as any)?.ar || catName }}
                 className={`${c.color || 'bg-white'} rounded-2xl p-4 md:p-6 flex flex-col items-center text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border-2 border-transparent hover:border-white/50`}
               >
                 <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-white/80 backdrop-blur-sm mb-4 grid place-items-center overflow-hidden shadow-sm">
-                  <img src={imageUrl(c.image)} alt={c.name} className="w-full h-full object-contain p-2 hover:scale-110 transition-transform" />
+                  <img src={imageUrl(c.image)} alt={catName} className="w-full h-full object-contain p-2 hover:scale-110 transition-transform" />
                 </div>
-                <h3 className="font-extrabold text-base md:text-lg mb-1 text-foreground/90">{c.name}</h3>
-                <p className="text-[10px] md:text-xs font-semibold text-foreground/60 bg-white/40 px-3 py-1 rounded-full mt-2">{c.count || 0} منتجات</p>
+                <h3 className="font-extrabold text-base md:text-lg mb-1 text-foreground/90">{catName}</h3>
+                <p className="text-[10px] md:text-xs font-semibold text-foreground/60 bg-white/40 px-3 py-1 rounded-full mt-2">{c.count || 0} {t("home.products_count")}</p>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
