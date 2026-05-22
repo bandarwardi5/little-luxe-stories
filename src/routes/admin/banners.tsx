@@ -6,6 +6,8 @@ import { Plus, Edit2, Trash2, Layout, Loader2, X, Save, ExternalLink, Image as I
 import { useState } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { MultiLangInput } from "@/components/admin/MultiLangInput";
+import { tl } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/banners")({
   component: AdminBanners,
@@ -17,10 +19,10 @@ function AdminBanners() {
   const [editingBanner, setEditingBanner] = useState<any>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    subtitle: "",
-    ctaText: "",
+  const [formData, setFormData] = useState<any>({
+    title: { ar: "", tr: "", en: "" },
+    subtitle: { ar: "", tr: "", en: "" },
+    ctaText: { ar: "", tr: "", en: "" },
     ctaLink: "",
     image: "",
     bgColor: "bg-blue-500",
@@ -28,12 +30,14 @@ function AdminBanners() {
     active: true,
   });
 
+  const ml = (v: any) => (typeof v === "string" ? { ar: v } : v || { ar: "" });
+
   const handleEdit = (banner: any) => {
     setEditingBanner(banner);
     setFormData({
-      title: banner.title,
-      subtitle: banner.subtitle || "",
-      ctaText: banner.ctaText || "",
+      title: ml(banner.title),
+      subtitle: ml(banner.subtitle),
+      ctaText: ml(banner.ctaText),
       ctaLink: banner.ctaLink || "",
       image: banner.image || "",
       bgColor: banner.bgColor || "bg-blue-500",
@@ -84,9 +88,9 @@ function AdminBanners() {
   const resetForm = () => {
     setEditingBanner(null);
     setFormData({
-      title: "",
-      subtitle: "",
-      ctaText: "",
+      title: { ar: "", tr: "", en: "" },
+      subtitle: { ar: "", tr: "", en: "" },
+      ctaText: { ar: "", tr: "", en: "" },
       ctaLink: "",
       image: "",
       bgColor: "bg-blue-500",
@@ -119,7 +123,7 @@ function AdminBanners() {
             <div key={banner.id} className="bg-white rounded-2xl border overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row">
               <div className={`md:w-64 h-48 md:h-auto ${banner.bgColor} flex items-center justify-center p-6 relative overflow-hidden shrink-0`}>
                 {banner.image ? (
-                  <img src={banner.image} alt={banner.title} className="w-full h-full object-contain relative z-10" />
+                  <img src={banner.image} alt={tl(banner.title as any, "ar")} className="w-full h-full object-contain relative z-10" />
                 ) : (
                   <ImageIcon size={64} className="text-white/50" />
                 )}
@@ -134,13 +138,13 @@ function AdminBanners() {
                     </span>
                     <span className="text-xs font-bold text-muted-foreground">ترتيب: {banner.order}</span>
                   </div>
-                  <h3 className="text-xl font-black mb-1">{banner.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{banner.subtitle}</p>
+                  <h3 className="text-xl font-black mb-1">{tl(banner.title as any, "ar")}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{tl(banner.subtitle as any, "ar")}</p>
                   
                   {banner.ctaText && (
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary text-xs font-bold">
                       <ExternalLink size={14} />
-                      {banner.ctaText}
+                      {tl(banner.ctaText as any, "ar")}
                     </div>
                   )}
                 </div>
@@ -184,35 +188,26 @@ function AdminBanners() {
             
             <form onSubmit={handleSubmit} className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-right">
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-bold block mb-1">العنوان الرئيسي *</label>
-                  <input 
-                    required
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-bold block mb-1">العنوان الفرعي</label>
-                  <input 
-                    value={formData.subtitle}
-                    onChange={(e) => setFormData({...formData, subtitle: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
+                <MultiLangInput
+                  label="العنوان الرئيسي"
+                  required
+                  value={formData.title}
+                  onChange={(v) => setFormData({ ...formData, title: v })}
+                />
+                <MultiLangInput
+                  label="العنوان الفرعي"
+                  value={formData.subtitle}
+                  onChange={(v) => setFormData({ ...formData, subtitle: v })}
+                />
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-bold block mb-1">نص الزر</label>
-                    <input 
-                      value={formData.ctaText}
-                      onChange={(e) => setFormData({...formData, ctaText: e.target.value})}
-                      className="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                  </div>
+                  <MultiLangInput
+                    label="نص الزر"
+                    value={formData.ctaText}
+                    onChange={(v) => setFormData({ ...formData, ctaText: v })}
+                  />
                   <div>
                     <label className="text-sm font-bold block mb-1">رابط الزر</label>
-                    <input 
+                    <input
                       value={formData.ctaLink}
                       onChange={(e) => setFormData({...formData, ctaLink: e.target.value})}
                       className="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20 text-left font-mono text-xs"

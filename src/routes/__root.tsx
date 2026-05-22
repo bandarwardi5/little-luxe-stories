@@ -8,6 +8,7 @@ import {
 import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
+import { LanguageProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -78,14 +79,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <Outlet />
-            <Toaster />
-          </WishlistProvider>
-        </CartProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <Outlet />
+              <Toaster />
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

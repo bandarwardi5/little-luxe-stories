@@ -6,6 +6,8 @@ import { Plus, Edit2, Trash2, MoveVertical, Loader2, X, Save, Image as ImageIcon
 import { useState } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { MultiLangInput } from "@/components/admin/MultiLangInput";
+import { tl } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/categories")({
   component: AdminCategories,
@@ -17,8 +19,8 @@ function AdminCategories() {
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
+  const [formData, setFormData] = useState<any>({
+    name: { ar: "", tr: "", en: "" },
     image: "",
     color: "bg-blue-100",
     count: 0
@@ -27,7 +29,7 @@ function AdminCategories() {
   const handleEdit = (category: any) => {
     setEditingCategory(category);
     setFormData({
-      name: category.name,
+      name: typeof category.name === "string" ? { ar: category.name } : category.name || { ar: "" },
       image: category.image || "",
       color: category.color || "bg-blue-100",
       count: category.count || 0
@@ -76,7 +78,7 @@ function AdminCategories() {
   const resetForm = () => {
     setEditingCategory(null);
     setFormData({
-      name: "",
+      name: { ar: "", tr: "", en: "" },
       image: "",
       color: "bg-blue-100",
       count: 0
@@ -109,7 +111,7 @@ function AdminCategories() {
                 <div className="absolute -right-4 -bottom-4 opacity-20 rotate-12 w-24 h-24">
                   {category.image ? <img src={category.image} className="w-full h-full object-contain" /> : <ImageIcon size={80} />}
                 </div>
-                <h3 className="text-xl font-black relative z-10">{category.name}</h3>
+                <h3 className="text-xl font-black relative z-10">{tl(category.name as any, "ar")}</h3>
                 <div className="bg-white/40 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-black relative z-10">
                   {category.count || 0} منتج
                 </div>
@@ -158,12 +160,11 @@ function AdminCategories() {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-6 text-right">
               <div>
-                <label className="text-sm font-bold block mb-2">اسم القسم *</label>
-                <input 
+                <MultiLangInput
+                  label="اسم القسم"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full border rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/20"
+                  onChange={(v) => setFormData({ ...formData, name: v })}
                 />
               </div>
               

@@ -6,6 +6,8 @@ import { Plus, Edit2, Trash2, Sparkles, Loader2, X, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { MultiLangInput } from "@/components/admin/MultiLangInput";
+import { tl } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/offers")({
   component: AdminOffers,
@@ -17,20 +19,22 @@ function AdminOffers() {
   const [editingOffer, setEditingOffer] = useState<any>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
+  const [formData, setFormData] = useState<any>({
+    title: { ar: "", tr: "", en: "" },
+    description: { ar: "", tr: "", en: "" },
     discount: 0,
     code: "",
     image: "",
     active: true,
   });
 
+  const ml = (v: any) => (typeof v === "string" ? { ar: v } : v || { ar: "" });
+
   const handleEdit = (offer: any) => {
     setEditingOffer(offer);
     setFormData({
-      title: offer.title,
-      description: offer.description || "",
+      title: ml(offer.title),
+      description: ml(offer.description),
       discount: offer.discount || 0,
       code: offer.code || "",
       image: offer.image || "",
@@ -80,8 +84,8 @@ function AdminOffers() {
   const resetForm = () => {
     setEditingOffer(null);
     setFormData({
-      title: "",
-      description: "",
+      title: { ar: "", tr: "", en: "" },
+      description: { ar: "", tr: "", en: "" },
       discount: 0,
       code: "",
       image: "",
@@ -121,8 +125,8 @@ function AdminOffers() {
                   </span>
                 </div>
                 
-                <h3 className="text-xl font-black mb-2">{offer.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{offer.description}</p>
+                <h3 className="text-xl font-black mb-2">{tl(offer.title as any, "ar")}</h3>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{tl(offer.description as any, "ar")}</p>
                 
                 <div className="flex items-center gap-4 mb-6">
                   <div className="flex-1 bg-secondary/30 p-3 rounded-xl text-center">
@@ -176,24 +180,21 @@ function AdminOffers() {
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4 text-right">
-              <div>
-                <label className="text-sm font-bold block mb-1">عنوان العرض *</label>
-                <input 
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
+              <MultiLangInput
+                label="عنوان العرض"
+                required
+                value={formData.title}
+                onChange={(v) => setFormData({ ...formData, title: v })}
+              />
 
-              <div>
-                <label className="text-sm font-bold block mb-1">الوصف</label>
-                <textarea 
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20 h-20 resize-none"
-                />
-              </div>
+              <MultiLangInput
+                label="الوصف"
+                multiline
+                rows={3}
+                value={formData.description}
+                onChange={(v) => setFormData({ ...formData, description: v })}
+              />
+              
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
