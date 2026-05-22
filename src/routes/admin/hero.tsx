@@ -5,6 +5,8 @@ import { Plus, Edit2, Trash2, LayoutDashboard, Loader2, X, Save, Image as ImageI
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { MultiLangInput } from "@/components/admin/MultiLangInput";
+import { tl } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/hero")({
   component: AdminHero,
@@ -17,14 +19,16 @@ function AdminHero() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    subtitle: "",
+  const [formData, setFormData] = useState<any>({
+    title: { ar: "", tr: "", en: "" },
+    subtitle: { ar: "", tr: "", en: "" },
     image: "",
-    ctaText: "",
+    ctaText: { ar: "", tr: "", en: "" },
     ctaLink: "",
     order: 0,
   });
+
+  const ml = (v: any) => (typeof v === "string" ? { ar: v } : v || { ar: "" });
 
   useEffect(() => {
     const q = query(collection(db, "hero"), orderBy("order", "asc"));
@@ -38,10 +42,10 @@ function AdminHero() {
   const handleEdit = (item: any) => {
     setEditingItem(item);
     setFormData({
-      title: item.title || "",
-      subtitle: item.subtitle || "",
+      title: ml(item.title),
+      subtitle: ml(item.subtitle),
       image: item.image || "",
-      ctaText: item.ctaText || "",
+      ctaText: ml(item.ctaText),
       ctaLink: item.ctaLink || "",
       order: item.order || 0,
     });
@@ -89,10 +93,10 @@ function AdminHero() {
   const resetForm = () => {
     setEditingItem(null);
     setFormData({
-      title: "",
-      subtitle: "",
+      title: { ar: "", tr: "", en: "" },
+      subtitle: { ar: "", tr: "", en: "" },
       image: "",
-      ctaText: "",
+      ctaText: { ar: "", tr: "", en: "" },
       ctaLink: "",
       order: 0,
     });
@@ -122,14 +126,14 @@ function AdminHero() {
             <div key={item.id} className="bg-white rounded-3xl border overflow-hidden group hover:shadow-xl transition-all duration-300">
               <div className="aspect-[21/9] bg-secondary relative overflow-hidden">
                 {item.image ? (
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <img src={item.image} alt={tl(item.title, "ar")} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center"><ImageIcon size={48} className="text-muted" /></div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                   <div className="text-white text-right">
-                    <h3 className="text-xl font-black">{item.title}</h3>
-                    <p className="text-sm opacity-80">{item.subtitle}</p>
+                    <h3 className="text-xl font-black">{tl(item.title, "ar")}</h3>
+                    <p className="text-sm opacity-80">{tl(item.subtitle, "ar")}</p>
                   </div>
                 </div>
               </div>
@@ -174,27 +178,21 @@ function AdminHero() {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4 text-right">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-bold block mb-1">العنوان الرئيسي</label>
-                  <input 
-                    required
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-bold block mb-1">العنوان الفرعي</label>
-                  <input 
-                    value={formData.subtitle}
-                    onChange={(e) => setFormData({...formData, subtitle: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
+                <MultiLangInput
+                  label="العنوان الرئيسي"
+                  required
+                  value={formData.title}
+                  onChange={(v) => setFormData({ ...formData, title: v })}
+                />
+                <MultiLangInput
+                  label="العنوان الفرعي"
+                  value={formData.subtitle}
+                  onChange={(v) => setFormData({ ...formData, subtitle: v })}
+                />
               </div>
 
               <div>
-                <ImageUpload 
+                <ImageUpload
                   label="صورة الخلفية"
                   value={formData.image}
                   onChange={(url) => setFormData({ ...formData, image: url })}
@@ -202,17 +200,14 @@ function AdminHero() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-bold block mb-1">نص الزر</label>
-                  <input 
-                    value={formData.ctaText}
-                    onChange={(e) => setFormData({...formData, ctaText: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-2 outline-none"
-                  />
-                </div>
+                <MultiLangInput
+                  label="نص الزر"
+                  value={formData.ctaText}
+                  onChange={(v) => setFormData({ ...formData, ctaText: v })}
+                />
                 <div>
                   <label className="text-sm font-bold block mb-1">رابط الزر</label>
-                  <input 
+                  <input
                     value={formData.ctaLink}
                     onChange={(e) => setFormData({...formData, ctaLink: e.target.value})}
                     className="w-full border rounded-xl px-4 py-2 outline-none text-left font-mono text-xs"

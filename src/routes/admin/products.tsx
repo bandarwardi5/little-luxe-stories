@@ -6,6 +6,8 @@ import { Plus, Search, Edit2, Trash2, ExternalLink, Filter, Loader2, X, Save } f
 import { useState } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { MultiLangInput } from "@/components/admin/MultiLangInput";
+import { tl } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/products")({
   component: AdminProducts,
@@ -19,31 +21,31 @@ function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
+  const [formData, setFormData] = useState<any>({
+    name: { ar: "", tr: "", en: "" },
     price: 0,
     oldPrice: 0,
     category: "",
     inStock: 10,
-    description: "",
+    description: { ar: "", tr: "", en: "" },
     image: "",
     images: [] as string[],
   });
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) || 
-    p.category.toLowerCase().includes(search.toLowerCase())
+  const filteredProducts = products.filter(p =>
+    tl(p.name as any, "ar").toLowerCase().includes(search.toLowerCase()) ||
+    tl(p.category as any, "ar").toLowerCase().includes(search.toLowerCase())
   );
 
   const handleEdit = (product: any) => {
     setEditingProduct(product);
     setFormData({
-      name: product.name,
+      name: typeof product.name === "string" ? { ar: product.name } : product.name || { ar: "" },
       price: product.price,
       oldPrice: product.oldPrice || 0,
       category: product.category,
       inStock: product.inStock,
-      description: product.description || "",
+      description: typeof product.description === "string" ? { ar: product.description } : product.description || { ar: "" },
       image: product.image,
       images: product.images || [],
     });
@@ -94,12 +96,12 @@ function AdminProducts() {
   const resetForm = () => {
     setEditingProduct(null);
     setFormData({
-      name: "",
+      name: { ar: "", tr: "", en: "" },
       price: 0,
       oldPrice: 0,
-      category: categories[0]?.name || "",
+      category: categories[0] ? tl(categories[0].name as any, "ar") : "",
       inStock: 10,
-      description: "",
+      description: { ar: "", tr: "", en: "" },
       image: "",
       images: [],
     });
@@ -137,7 +139,7 @@ function AdminProducts() {
         <div className="flex gap-2 w-full md:w-auto">
           <select className="flex-1 md:flex-none border rounded-xl px-4 py-2.5 text-sm font-bold bg-transparent outline-none text-right">
             <option>جميع الأقسام</option>
-            {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            {categories.map(c => <option key={c.id} value={tl(c.name as any, "ar")}>{tl(c.name as any, "ar")}</option>)}
           </select>
         </div>
       </div>
@@ -164,15 +166,15 @@ function AdminProducts() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg bg-secondary/50 overflow-hidden shrink-0">
-                          <img src={product.image} alt={product.name} className="w-full h-full object-contain p-1" />
+                          <img src={product.image} alt={tl(product.name as any, "ar")} className="w-full h-full object-contain p-1" />
                         </div>
                         <div>
-                          <h4 className="font-bold line-clamp-1">{product.name}</h4>
+                          <h4 className="font-bold line-clamp-1">{tl(product.name as any, "ar")}</h4>
                           <p className="text-[10px] text-muted-foreground">ID: #{product.id.slice(0, 8)}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-medium text-muted-foreground">{product.category}</td>
+                    <td className="px-6 py-4 font-medium text-muted-foreground">{tl(product.category as any, "ar")}</td>
                     <td className="px-6 py-4 font-bold text-primary">{product.price} ل.ت</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
@@ -221,25 +223,24 @@ function AdminProducts() {
             <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto text-right">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <label className="text-sm font-bold block mb-2">اسم المنتج *</label>
-                  <input 
+                  <MultiLangInput
+                    label="اسم المنتج"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/20"
+                    onChange={(v) => setFormData({ ...formData, name: v })}
                   />
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-bold block mb-2">القسم *</label>
-                  <select 
+                  <select
                     required
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
                     className="w-full border rounded-xl px-4 py-2.5 outline-none text-right"
                   >
                     <option value="">اختر قسماً</option>
-                    {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    {categories.map(c => <option key={c.id} value={tl(c.name as any, "ar")}>{tl(c.name as any, "ar")}</option>)}
                   </select>
                 </div>
 
@@ -322,12 +323,12 @@ function AdminProducts() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="text-sm font-bold block mb-2">الوصف</label>
-                  <textarea 
+                  <MultiLangInput
+                    label="الوصف"
+                    multiline
                     rows={4}
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-2.5 outline-none text-right resize-none"
+                    onChange={(v) => setFormData({ ...formData, description: v })}
                   />
                 </div>
               </div>
