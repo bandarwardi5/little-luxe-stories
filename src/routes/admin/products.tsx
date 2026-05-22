@@ -295,7 +295,7 @@ function AdminProducts() {
                       onChange={(url) => setFormData({ ...formData, image: url })}
                     />
                     
-                    {formData.images.map((img, idx) => (
+                    {formData.images.map((img: string, idx: number) => (
                       <div key={idx} className="relative p-4 border rounded-2xl bg-secondary/10">
                         <button 
                           type="button"
