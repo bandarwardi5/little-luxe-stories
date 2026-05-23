@@ -50,9 +50,12 @@ function AdminProducts() {
       description: typeof product.description === "string" ? { ar: product.description } : product.description || { ar: "" },
       image: product.image,
       images: product.images || [],
+      colors: (product.colors || []).map((c: any) => typeof c === "string" ? { ar: c, tr: "", en: "" } : c),
+      sizes: product.sizes || [],
     });
     setIsMenuOpen(true);
   };
+
 
   const handleDelete = async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
@@ -106,8 +109,11 @@ function AdminProducts() {
       description: { ar: "", tr: "", en: "" },
       image: "",
       images: [],
+      colors: [],
+      sizes: [],
     });
   };
+
 
 
   return (
