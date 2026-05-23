@@ -352,26 +352,52 @@ function Index() {
         </div>
       </section>
 
+      {/* Mood Mosaic - colorful style guide */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <span className="inline-block bg-banner-pink text-foreground/70 text-[10px] tracking-[0.3em] font-black px-4 py-1.5 rounded-full mb-4 font-ethno uppercase">Style Guide</span>
+          <h2 className="text-3xl md:text-4xl font-black font-ethno">تسوق حسب الستايل</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {[
+            { label: "كاجوال", bg: "bg-gradient-to-br from-rose-300 to-pink-400", emoji: "👕" },
+            { label: "رياضي", bg: "bg-gradient-to-br from-emerald-300 to-teal-500", emoji: "👟" },
+            { label: "مناسبات", bg: "bg-gradient-to-br from-amber-300 to-orange-500", emoji: "👗" },
+            { label: "بيجامات", bg: "bg-gradient-to-br from-violet-300 to-indigo-500", emoji: "🌙" },
+            { label: "أحذية", bg: "bg-gradient-to-br from-sky-300 to-blue-500", emoji: "👞" },
+            { label: "إكسسوارات", bg: "bg-gradient-to-br from-fuchsia-300 to-purple-500", emoji: "🎀" },
+            { label: "حقائب", bg: "bg-gradient-to-br from-yellow-300 to-amber-500", emoji: "🎒" },
+            { label: "هدايا", bg: "bg-gradient-to-br from-pink-300 to-rose-500", emoji: "🎁" },
+          ].map((m) => (
+            <Link key={m.label} to="/shop" className={`${m.bg} group rounded-3xl p-6 aspect-square flex flex-col items-center justify-center text-white text-center shadow-lg hover:shadow-2xl hover:-translate-y-1 hover:scale-105 transition-all duration-300`}>
+              <div className="text-5xl md:text-6xl mb-3 group-hover:scale-125 group-hover:rotate-6 transition-transform duration-500">{m.emoji}</div>
+              <span className="font-extrabold text-sm md:text-base drop-shadow">{m.label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Testimonials */}
-      <section className="bg-secondary/40 py-14">
+      <section className="bg-gradient-to-br from-banner-pink via-white to-banner-mint py-16">
         <div className="container mx-auto px-4">
           <p className="text-xs tracking-widest text-primary font-bold text-center mb-2 font-ethno uppercase">Testimonials</p>
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-10 font-ethno">ماذا يقول عملاؤنا</h2>
-          <div className="grid md:grid-cols-3 gap-5">
+          <h2 className="text-3xl md:text-4xl font-black text-center mb-12 font-ethno">ماذا يقول عملاؤنا</h2>
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              { name: "نورة العتيبي", role: "أم لطفلين", text: "جودة ممتازة وأسعار مناسبة. ملابس مريحة جدًا لأطفالي وألوان رائعة." },
-              { name: "محمد القحطاني", role: "أب", text: "خدمة سريعة وتغليف أنيق. أصبح متجري المفضل لكل احتياجات الأطفال." },
-              { name: "هدى الزهراني", role: "زبونة دائمة", text: "تشكيلة واسعة وعصرية، وفريق دعم متعاون جدًا. أنصح به بشدة." },
-            ].map((t) => (
-              <div key={t.name} className="bg-card border rounded-lg p-6">
-                <p className="text-sm leading-relaxed text-muted-foreground mb-5">"{t.text}"</p>
+              { name: "نورة العتيبي", role: "أم لطفلين", text: "جودة ممتازة وأسعار مناسبة. ملابس مريحة جدًا لأطفالي وألوان رائعة.", color: "from-rose-100 to-pink-50" },
+              { name: "محمد القحطاني", role: "أب", text: "خدمة سريعة وتغليف أنيق. أصبح متجري المفضل لكل احتياجات الأطفال.", color: "from-amber-100 to-orange-50" },
+              { name: "هدى الزهراني", role: "زبونة دائمة", text: "تشكيلة واسعة وعصرية، وفريق دعم متعاون جدًا. أنصح به بشدة.", color: "from-emerald-100 to-teal-50" },
+            ].map((tt) => (
+              <div key={tt.name} className={`bg-gradient-to-br ${tt.color} border border-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-shadow`}>
+                <div className="text-5xl text-primary/30 mb-3 leading-none">"</div>
+                <p className="text-sm leading-relaxed text-foreground/80 mb-6">{tt.text}</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/15 grid place-items-center text-primary font-bold">
-                    {t.name.charAt(0)}
+                  <div className="w-12 h-12 rounded-full bg-primary text-white grid place-items-center font-black text-lg shadow-md">
+                    {tt.name.charAt(0)}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold">{t.name}</h4>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                    <h4 className="text-sm font-black">{tt.name}</h4>
+                    <p className="text-xs text-muted-foreground">{tt.role}</p>
                   </div>
                 </div>
               </div>
@@ -379,6 +405,7 @@ function Index() {
           </div>
         </div>
       </section>
+
 
       <Footer />
     </div>
