@@ -199,31 +199,64 @@ function Index() {
         </div>
       </section>
 
-      {/* Shop by Age - Minimal Design */}
-      <section className="bg-secondary/30 py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">تسوق حسب العمر</h2>
-            <p className="text-muted-foreground">اختر الفئة العمرية المناسبة لطفلك للوصول السريع للمقاسات</p>
+      {/* Shop by Age - Colorful Design */}
+      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-banner-peach/40 via-white to-banner-mint/40">
+        {/* Decorative blobs */}
+        <div className="absolute -top-20 -start-20 w-80 h-80 rounded-full bg-banner-pink/60 blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-32 -end-20 w-96 h-96 rounded-full bg-banner-mint/50 blur-3xl pointer-events-none"></div>
+        <div className="absolute top-1/2 start-1/2 w-2 h-2 rounded-full bg-primary/20 pointer-events-none"></div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-14">
+            <span className="inline-block bg-primary/10 text-primary text-[10px] tracking-[0.3em] font-black px-4 py-1.5 rounded-full mb-4 font-ethno uppercase">By Age</span>
+            <h2 className="text-3xl md:text-5xl font-black mb-3 font-ethno">{t("home.by_age")}</h2>
+            <p className="text-muted-foreground text-sm md:text-base">اختر الفئة العمرية المناسبة لطفلك للوصول السريع للمقاسات</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { age: "0 - 24", label: "أشهر", title: "حديثي الولادة", color: "bg-banner-peach" },
-              { age: "2 - 5", label: "سنوات", title: "الأطفال الصغار", color: "bg-banner-pink" },
-              { age: "6 - 10", label: "سنوات", title: "الأطفال", color: "bg-banner-mint" },
-              { age: "11 - 14", label: "سنة", title: "المراهقين", color: "bg-secondary" },
+              { age: "0 - 24", label: "أشهر", title: "حديثي الولادة", color: "from-rose-200 to-rose-100", dot: "bg-rose-400" },
+              { age: "2 - 5", label: "سنوات", title: "الأطفال الصغار", color: "from-amber-200 to-amber-100", dot: "bg-amber-400" },
+              { age: "6 - 10", label: "سنوات", title: "الأطفال", color: "from-emerald-200 to-emerald-100", dot: "bg-emerald-400" },
+              { age: "11 - 14", label: "سنة", title: "المراهقين", color: "from-sky-200 to-sky-100", dot: "bg-sky-400" },
             ].map((item, i) => (
-              <Link key={i} to="/shop" className="group flex flex-col items-center w-32 md:w-40">
-                <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full ${item.color} flex flex-col items-center justify-center mb-4 group-hover:shadow-lg transition-all duration-300 group-hover:-translate-y-2`}>
-                  <span className="text-2xl md:text-3xl font-black text-foreground/80">{item.age}</span>
-                  <span className="text-xs font-medium text-foreground/60">{item.label}</span>
+              <Link key={i} to="/shop" className="group relative bg-white rounded-3xl p-6 md:p-8 text-center shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-white">
+                <div className={`absolute inset-0 bg-gradient-to-br ${item.color} rounded-3xl opacity-50 group-hover:opacity-80 transition-opacity`}></div>
+                <div className="relative z-10">
+                  <div className={`w-3 h-3 ${item.dot} rounded-full mx-auto mb-4 group-hover:scale-150 transition-transform`}></div>
+                  <div className="text-3xl md:text-5xl font-black text-foreground mb-1">{item.age}</div>
+                  <div className="text-xs font-bold text-foreground/60 mb-4 uppercase tracking-widest">{item.label}</div>
+                  <h3 className="font-extrabold text-base md:text-lg group-hover:text-primary transition-colors">{item.title}</h3>
                 </div>
-                <h3 className="font-bold text-center group-hover:text-primary transition-colors">{item.title}</h3>
               </Link>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Colorful Brand Values Strip */}
+      <section className="relative overflow-hidden py-14 bg-foreground text-background">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,_var(--color-primary)_0%,_transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,_var(--color-banner-mint)_0%,_transparent_50%)]"></div>
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            {[
+              { emoji: "🌿", title: "أقمشة طبيعية", text: "قطن عضوي ١٠٠٪ لراحة بشرة طفلك" },
+              { emoji: "✨", title: "تصاميم حصرية", text: "إبداعات يدوية بلمسات عالمية" },
+              { emoji: "💝", title: "صنع بحب", text: "كل قطعة تروي قصة عناية واهتمام" },
+            ].map((v) => (
+              <div key={v.title} className="flex flex-col items-center group">
+                <div className="text-5xl mb-4 group-hover:scale-125 transition-transform duration-500">{v.emoji}</div>
+                <h3 className="font-ethno font-black text-xl mb-2">{v.title}</h3>
+                <p className="text-background/70 text-sm max-w-xs">{v.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
 
       {/* Offers */}
       <section className="relative px-4 py-16 overflow-hidden">
