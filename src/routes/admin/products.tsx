@@ -50,9 +50,12 @@ function AdminProducts() {
       description: typeof product.description === "string" ? { ar: product.description } : product.description || { ar: "" },
       image: product.image,
       images: product.images || [],
+      colors: (product.colors || []).map((c: any) => typeof c === "string" ? { ar: c, tr: "", en: "" } : c),
+      sizes: product.sizes || [],
     });
     setIsMenuOpen(true);
   };
+
 
   const handleDelete = async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
@@ -106,8 +109,11 @@ function AdminProducts() {
       description: { ar: "", tr: "", en: "" },
       image: "",
       images: [],
+      colors: [],
+      sizes: [],
     });
   };
+
 
 
   return (
@@ -278,10 +284,11 @@ function AdminProducts() {
                   />
                 </div>
 
+                {/* === Images: main + gallery with ordering === */}
                 <div className="md:col-span-2 space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm">صور المنتج الإضافية</h3>
-                    <button 
+                    <h3 className="font-bold text-sm">صور المنتج</h3>
+                    <button
                       type="button"
                       onClick={() => setFormData({ ...formData, images: [...formData.images, ""] })}
                       className="text-xs bg-secondary px-3 py-1 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors"
@@ -289,70 +296,110 @@ function AdminProducts() {
                       + إضافة صورة
                     </button>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <ImageUpload 
-                      label="الصورة الرئيسية (الغلاف)"
-                      value={formData.image}
-                      onChange={(url) => setFormData({ ...formData, image: url })}
-                    />
-                    
-                    {formData.images.map((img: string, idx: number) => (
-                      <div key={idx} className="relative p-4 border rounded-2xl bg-secondary/10">
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            const newImages = [...formData.images];
-                            newImages.splice(idx, 1);
-                            setFormData({ ...formData, images: newImages });
-                          }}
-                          className="absolute top-2 left-2 p-1 bg-rose-500 text-white rounded-full hover:scale-110 transition-transform z-10"
-                        >
-                          <X size={14} />
-                        </button>
-                        <ImageUpload 
-                          label={`صورة إضافية ${idx + 1}`}
-                          value={img}
-                          onChange={(url) => {
-                            const newImages = [...formData.images];
-                            newImages[idx] = url;
-                            setFormData({ ...formData, images: newImages });
-                          }}
-                        />
-                      </div>
-                    ))}
-                {/* Colors Management */}
+
+                  <ImageUpload
+                    label="الصورة الرئيسية (الغلاف)"
+                    value={formData.image}
+                    onChange={(url) => setFormData({ ...formData, image: url })}
+                  />
+
+                  {formData.images.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold text-muted-foreground">معرض الصور — اسحب لإعادة الترتيب أو حدد صورة رئيسية</p>
+                      {formData.images.map((img: string, idx: number) => (
+                        <div key={idx} className="relative p-3 border rounded-2xl bg-secondary/10 flex items-center gap-3">
+                          <span className="w-6 h-6 grid place-items-center rounded-full bg-primary text-white text-xs font-bold shrink-0">{idx + 1}</span>
+                          {img ? (
+                            <img src={img} alt={`صورة ${idx + 1}`} className="w-20 h-20 object-cover rounded-lg shrink-0" />
+                          ) : (
+                            <div className="w-20 h-20 rounded-lg bg-secondary/40 shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <ImageUpload
+                              label={`صورة ${idx + 1}`}
+                              value={img}
+                              onChange={(url) => {
+                                const newImages = [...formData.images];
+                                newImages[idx] = url;
+                                setFormData({ ...formData, images: newImages });
+                              }}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1 shrink-0">
+                            <div className="flex gap-1">
+                              <button type="button" disabled={idx === 0} onClick={() => {
+                                const newImages = [...formData.images];
+                                [newImages[idx - 1], newImages[idx]] = [newImages[idx], newImages[idx - 1]];
+                                setFormData({ ...formData, images: newImages });
+                              }} className="px-2 py-1 text-sm bg-secondary/40 rounded disabled:opacity-30">↑</button>
+                              <button type="button" disabled={idx === formData.images.length - 1} onClick={() => {
+                                const newImages = [...formData.images];
+                                [newImages[idx + 1], newImages[idx]] = [newImages[idx], newImages[idx + 1]];
+                                setFormData({ ...formData, images: newImages });
+                              }} className="px-2 py-1 text-sm bg-secondary/40 rounded disabled:opacity-30">↓</button>
+                            </div>
+                            <button type="button" disabled={!img} onClick={() => {
+                              const mainImg = img;
+                              const oldMain = formData.image;
+                              const newImages = [...formData.images];
+                              newImages[idx] = oldMain;
+                              setFormData({ ...formData, image: mainImg, images: newImages });
+                            }} className="text-[11px] text-primary hover:underline disabled:opacity-30 whitespace-nowrap">
+                              تعيين كرئيسية
+                            </button>
+                            <button type="button" onClick={() => {
+                              const newImages = [...formData.images];
+                              newImages.splice(idx, 1);
+                              setFormData({ ...formData, images: newImages });
+                            }} className="text-[11px] text-rose-500 hover:underline">
+                              حذف
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* === Colors (multilingual) === */}
                 <div className="md:col-span-2">
-                  <label className="text-sm font-bold block mb-2">الألوان (افصل بفواصل أو أضف كل لون على حدة)</label>
-                  <div className="flex flex-wrap gap-2 items-center">
-                    {formData.colors.map((c: string, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1 bg-secondary/20 px-3 py-1 rounded-full">
-                        <span className="text-sm">{c}</span>
+                  <label className="text-sm font-bold block mb-2">الألوان</label>
+                  <div className="space-y-2">
+                    {formData.colors.map((c: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2 p-3 bg-secondary/10 rounded-xl">
+                        <div className="flex-1">
+                          <MultiLangInput
+                            label={`لون ${idx + 1}`}
+                            value={c}
+                            onChange={(v) => {
+                              const newColors = [...formData.colors];
+                              newColors[idx] = v;
+                              setFormData({ ...formData, colors: newColors });
+                            }}
+                          />
+                        </div>
                         <button type="button" onClick={() => {
                           const newColors = [...formData.colors];
                           newColors.splice(idx, 1);
                           setFormData({ ...formData, colors: newColors });
-                        }} className="text-rose-500 hover:text-rose-700">
-                          <X size={12} />
+                        }} className="p-2 text-rose-500 hover:bg-rose-50 rounded mt-6">
+                          <X size={14} />
                         </button>
                       </div>
                     ))}
-                    <button type="button" onClick={() => {
-                      const newColor = prompt('أدخل اسم اللون');
-                      if (newColor) setFormData({ ...formData, colors: [...formData.colors, newColor] });
-                    }} className="text-primary hover:underline">
+                    <button type="button" onClick={() => setFormData({ ...formData, colors: [...formData.colors, { ar: "", tr: "", en: "" }] })} className="text-primary hover:underline text-sm font-bold">
                       + إضافة لون
                     </button>
                   </div>
                 </div>
 
-                {/* Sizes Management */}
+                {/* === Sizes === */}
                 <div className="md:col-span-2">
-                  <label className="text-sm font-bold block mb-2">المقاسات (مثال: S, M, L)</label>
+                  <label className="text-sm font-bold block mb-2">المقاسات (مثال: S, M, L, 2-3 سنوات)</label>
                   <div className="flex flex-wrap gap-2 items-center">
                     {formData.sizes.map((s: string, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1 bg-secondary/20 px-3 py-1 rounded-full">
-                        <span className="text-sm">{s}</span>
+                      <div key={idx} className="flex items-center gap-1 bg-secondary/30 px-3 py-1 rounded-full">
+                        <span className="text-sm font-bold">{s}</span>
                         <button type="button" onClick={() => {
                           const newSizes = [...formData.sizes];
                           newSizes.splice(idx, 1);
@@ -365,64 +412,13 @@ function AdminProducts() {
                     <button type="button" onClick={() => {
                       const newSize = prompt('أدخل المقاس');
                       if (newSize) setFormData({ ...formData, sizes: [...formData.sizes, newSize] });
-                    }} className="text-primary hover:underline">
+                    }} className="text-primary hover:underline text-sm font-bold">
                       + إضافة مقاس
                     </button>
                   </div>
                 </div>
 
-                {/* Images Management (ordering & main) */}
-                <div className="md:col-span-2">
-                  <label className="text-sm font-bold block mb-2">صور المنتج الإضافية (ترتيب واسحب لإعادة ترتيب)</label>
-                  <div className="space-y-4">
-                    {formData.images.map((img: string, idx: number) => (
-                      <div key={idx} className="relative p-4 border rounded-2xl bg-secondary/10 flex items-center gap-4">
-                        <img src={img} alt={`صورة ${idx + 1}`} className="w-24 h-24 object-cover rounded" />
-                        <div className="flex flex-col gap-2">
-                          <button type="button" onClick={() => {
-                            const newImages = [...formData.images];
-                            newImages.splice(idx, 1);
-                            setFormData({ ...formData, images: newImages });
-                          }} className="text-rose-500 hover:underline text-sm">
-                            حذف الصورة
-                          </button>
-                          <button type="button" onClick={() => {
-                            // set as main image
-                            const mainImg = img;
-                            const remaining = formData.images.filter((_i, i) => i !== idx);
-                            setFormData({ ...formData, image: mainImg, images: remaining });
-                          }} className="text-primary hover:underline text-sm">
-                            تعيين كصورة رئيسية
-                          </button>
-                          <div className="flex gap-2">
-                            <button type="button" disabled={idx === 0} onClick={() => {
-                              const newImages = [...formData.images];
-                              [newImages[idx - 1], newImages[idx]] = [newImages[idx], newImages[idx - 1]];
-                              setFormData({ ...formData, images: newImages });
-                            }} className="text-sm bg-secondary/20 px-2 py-1 rounded disabled:opacity-50">
-                              ↑
-                            </button>
-                            <button type="button" disabled={idx === formData.images.length - 1} onClick={() => {
-                              const newImages = [...formData.images];
-                              [newImages[idx + 1], newImages[idx]] = [newImages[idx], newImages[idx + 1]];
-                              setFormData({ ...formData, images: newImages });
-                            }} className="text-sm bg-secondary/20 px-2 py-1 rounded disabled:opacity-50">
-                              ↓
-                            </button>
-                          </div>
-                        </div>
-                        <button type="button" onClick={() => {
-                          const newImages = [...formData.images];
-                          newImages.splice(idx, 1);
-                          setFormData({ ...formData, images: newImages });
-                        }} className="absolute top-2 left-2 p-1 bg-rose-500 text-white rounded-full hover:scale-110 transition-transform">
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
+                {/* === Description multilingual === */}
                 <div className="md:col-span-2">
                   <MultiLangInput
                     label="الوصف"
@@ -433,6 +429,7 @@ function AdminProducts() {
                   />
                 </div>
               </div>
+
 
               <div className="pt-6 border-t flex gap-3">
                 <button 

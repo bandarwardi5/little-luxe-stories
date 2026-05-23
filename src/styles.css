@@ -102,9 +102,9 @@
     border-color: var(--color-border);
   }
   html {
-    direction: rtl;
     overflow-x: hidden;
   }
+  /* direction is controlled by LanguageProvider (sets document.documentElement.dir) */
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
