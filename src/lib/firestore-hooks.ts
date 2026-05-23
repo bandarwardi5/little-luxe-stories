@@ -60,6 +60,19 @@ export type FsOffer = {
   active?: boolean;
 };
 
+export type FsBlog = {
+  id: string;
+  title: any; // Can be Multilingual
+  excerpt: any; // Can be Multilingual
+  content: any; // Can be Multilingual
+  author: string;
+  category: string;
+  image: string;
+  date: string;
+  readTime?: string;
+  createdAt?: any;
+};
+
 export type FsOrder = {
   id: string;
   userId?: string;
@@ -108,6 +121,7 @@ export const useProducts = () => useCollection<FsProduct>("products", orderBy("c
 export const useCategories = () => useCollection<FsCategory>("categories", orderBy("order", "asc"));
 export const useBanners = () => useCollection<FsBanner>("banners", orderBy("order", "asc"));
 export const useOffers = () => useCollection<FsOffer>("offers");
+export const useBlogs = () => useCollection<FsBlog>("blogs", orderBy("createdAt", "desc"));
 export const useOrders = () => useCollection<FsOrder>("orders", orderBy("createdAt", "desc"));
 export const useUsers = () => useCollection<any>("users");
 export const useNewsletter = () => useCollection<any>("newsletter");
@@ -143,3 +157,17 @@ export function useProduct(id: string | undefined) {
   }, [id]);
   return { product, loading };
 }
+
+export function useBlog(id: string | undefined) {
+  const [blog, setBlog] = useState<FsBlog | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!id) { setLoading(false); return; }
+    getDoc(doc(db, "blogs", id)).then((snap) => {
+      setBlog(snap.exists() ? ({ id: snap.id, ...snap.data() } as FsBlog) : null);
+      setLoading(false);
+    });
+  }, [id]);
+  return { blog, loading };
+}
+

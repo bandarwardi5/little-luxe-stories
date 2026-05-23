@@ -26,6 +26,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as BlogIdRouteImport } from './routes/blog.$id'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
@@ -35,6 +36,7 @@ import { Route as AdminHeroRouteImport } from './routes/admin/hero'
 import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminContactsRouteImport } from './routes/admin/contacts'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
+import { Route as AdminBlogsRouteImport } from './routes/admin/blogs'
 import { Route as AdminBannersRouteImport } from './routes/admin/banners'
 
 const WishlistRoute = WishlistRouteImport.update({
@@ -122,6 +124,11 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIdRoute = BlogIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BlogRoute,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -167,6 +174,11 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBlogsRoute = AdminBlogsRouteImport.update({
+  id: '/blogs',
+  path: '/blogs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBannersRoute = AdminBannersRouteImport.update({
   id: '/banners',
   path: '/banners',
@@ -178,7 +190,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/admin': typeof AdminRouteWithChildren
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
@@ -190,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/wishlist': typeof WishlistRoute
   '/admin/banners': typeof AdminBannersRoute
+  '/admin/blogs': typeof AdminBlogsRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/contacts': typeof AdminContactsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -199,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/blog/$id': typeof BlogIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -206,7 +220,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
@@ -218,6 +232,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/wishlist': typeof WishlistRoute
   '/admin/banners': typeof AdminBannersRoute
+  '/admin/blogs': typeof AdminBlogsRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/contacts': typeof AdminContactsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -227,6 +242,7 @@ export interface FileRoutesByTo {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/blog/$id': typeof BlogIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -236,7 +252,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/admin': typeof AdminRouteWithChildren
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
@@ -248,6 +264,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/wishlist': typeof WishlistRoute
   '/admin/banners': typeof AdminBannersRoute
+  '/admin/blogs': typeof AdminBlogsRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/contacts': typeof AdminContactsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -257,6 +274,7 @@ export interface FileRoutesById {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/blog/$id': typeof BlogIdRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -279,6 +297,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/wishlist'
     | '/admin/banners'
+    | '/admin/blogs'
     | '/admin/categories'
     | '/admin/contacts'
     | '/admin/customers'
@@ -288,6 +307,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/settings'
+    | '/blog/$id'
     | '/product/$id'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -307,6 +327,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/wishlist'
     | '/admin/banners'
+    | '/admin/blogs'
     | '/admin/categories'
     | '/admin/contacts'
     | '/admin/customers'
@@ -316,6 +337,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/settings'
+    | '/blog/$id'
     | '/product/$id'
     | '/admin'
   id:
@@ -336,6 +358,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/wishlist'
     | '/admin/banners'
+    | '/admin/blogs'
     | '/admin/categories'
     | '/admin/contacts'
     | '/admin/customers'
@@ -345,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/settings'
+    | '/blog/$id'
     | '/product/$id'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -354,7 +378,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
   AdminRoute: typeof AdminRouteWithChildren
-  BlogRoute: typeof BlogRoute
+  BlogRoute: typeof BlogRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
@@ -489,6 +513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/$id': {
+      id: '/blog/$id'
+      path: '/$id'
+      fullPath: '/blog/$id'
+      preLoaderRoute: typeof BlogIdRouteImport
+      parentRoute: typeof BlogRoute
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/settings'
@@ -552,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/blogs': {
+      id: '/admin/blogs'
+      path: '/blogs'
+      fullPath: '/admin/blogs'
+      preLoaderRoute: typeof AdminBlogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/banners': {
       id: '/admin/banners'
       path: '/banners'
@@ -564,6 +602,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminBannersRoute: typeof AdminBannersRoute
+  AdminBlogsRoute: typeof AdminBlogsRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminContactsRoute: typeof AdminContactsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
@@ -578,6 +617,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBannersRoute: AdminBannersRoute,
+  AdminBlogsRoute: AdminBlogsRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminContactsRoute: AdminContactsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
@@ -592,12 +632,22 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface BlogRouteChildren {
+  BlogIdRoute: typeof BlogIdRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogIdRoute: BlogIdRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
   AdminRoute: AdminRouteWithChildren,
-  BlogRoute: BlogRoute,
+  BlogRoute: BlogRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,

@@ -14,7 +14,8 @@ import {
   Sparkles,
   Loader2,
   ShieldAlert,
-  Mail
+  Mail,
+  BookOpen
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -69,6 +70,7 @@ function AdminLayout() {
     { name: "الأقسام", icon: Layers, path: "/admin/categories" },
     { name: "الطلبات", icon: ShoppingCart, path: "/admin/orders" },
     { name: "العملاء", icon: Users, path: "/admin/customers" },
+    { name: "المقالات", icon: BookOpen, path: "/admin/blogs" },
     { name: "العروض", icon: Sparkles, path: "/admin/offers" },
     { name: "البانرز", icon: Menu, path: "/admin/banners" },
     { name: "الهيرو", icon: LayoutDashboard, path: "/admin/hero" },
@@ -76,6 +78,7 @@ function AdminLayout() {
     { name: "الرسائل", icon: Mail, path: "/admin/contacts" },
     { name: "الإعدادات", icon: Settings, path: "/admin/settings" },
   ];
+
 
   return (
     <div className="min-h-screen bg-secondary/20 flex font-cairo" dir="rtl">

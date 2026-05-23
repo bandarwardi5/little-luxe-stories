@@ -30,6 +30,8 @@ function AdminProducts() {
     description: { ar: "", tr: "", en: "" },
     image: "",
     images: [] as string[],
+    colors: [] as string[],
+    sizes: [] as string[],
   });
 
   const filteredProducts = products.filter(p =>
@@ -317,6 +319,105 @@ function AdminProducts() {
                             setFormData({ ...formData, images: newImages });
                           }}
                         />
+                      </div>
+                    ))}
+                {/* Colors Management */}
+                <div className="md:col-span-2">
+                  <label className="text-sm font-bold block mb-2">الألوان (افصل بفواصل أو أضف كل لون على حدة)</label>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {formData.colors.map((c: string, idx: number) => (
+                      <div key={idx} className="flex items-center gap-1 bg-secondary/20 px-3 py-1 rounded-full">
+                        <span className="text-sm">{c}</span>
+                        <button type="button" onClick={() => {
+                          const newColors = [...formData.colors];
+                          newColors.splice(idx, 1);
+                          setFormData({ ...formData, colors: newColors });
+                        }} className="text-rose-500 hover:text-rose-700">
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => {
+                      const newColor = prompt('أدخل اسم اللون');
+                      if (newColor) setFormData({ ...formData, colors: [...formData.colors, newColor] });
+                    }} className="text-primary hover:underline">
+                      + إضافة لون
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sizes Management */}
+                <div className="md:col-span-2">
+                  <label className="text-sm font-bold block mb-2">المقاسات (مثال: S, M, L)</label>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {formData.sizes.map((s: string, idx: number) => (
+                      <div key={idx} className="flex items-center gap-1 bg-secondary/20 px-3 py-1 rounded-full">
+                        <span className="text-sm">{s}</span>
+                        <button type="button" onClick={() => {
+                          const newSizes = [...formData.sizes];
+                          newSizes.splice(idx, 1);
+                          setFormData({ ...formData, sizes: newSizes });
+                        }} className="text-rose-500 hover:text-rose-700">
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => {
+                      const newSize = prompt('أدخل المقاس');
+                      if (newSize) setFormData({ ...formData, sizes: [...formData.sizes, newSize] });
+                    }} className="text-primary hover:underline">
+                      + إضافة مقاس
+                    </button>
+                  </div>
+                </div>
+
+                {/* Images Management (ordering & main) */}
+                <div className="md:col-span-2">
+                  <label className="text-sm font-bold block mb-2">صور المنتج الإضافية (ترتيب واسحب لإعادة ترتيب)</label>
+                  <div className="space-y-4">
+                    {formData.images.map((img: string, idx: number) => (
+                      <div key={idx} className="relative p-4 border rounded-2xl bg-secondary/10 flex items-center gap-4">
+                        <img src={img} alt={`صورة ${idx + 1}`} className="w-24 h-24 object-cover rounded" />
+                        <div className="flex flex-col gap-2">
+                          <button type="button" onClick={() => {
+                            const newImages = [...formData.images];
+                            newImages.splice(idx, 1);
+                            setFormData({ ...formData, images: newImages });
+                          }} className="text-rose-500 hover:underline text-sm">
+                            حذف الصورة
+                          </button>
+                          <button type="button" onClick={() => {
+                            // set as main image
+                            const mainImg = img;
+                            const remaining = formData.images.filter((_i, i) => i !== idx);
+                            setFormData({ ...formData, image: mainImg, images: remaining });
+                          }} className="text-primary hover:underline text-sm">
+                            تعيين كصورة رئيسية
+                          </button>
+                          <div className="flex gap-2">
+                            <button type="button" disabled={idx === 0} onClick={() => {
+                              const newImages = [...formData.images];
+                              [newImages[idx - 1], newImages[idx]] = [newImages[idx], newImages[idx - 1]];
+                              setFormData({ ...formData, images: newImages });
+                            }} className="text-sm bg-secondary/20 px-2 py-1 rounded disabled:opacity-50">
+                              ↑
+                            </button>
+                            <button type="button" disabled={idx === formData.images.length - 1} onClick={() => {
+                              const newImages = [...formData.images];
+                              [newImages[idx + 1], newImages[idx]] = [newImages[idx], newImages[idx + 1]];
+                              setFormData({ ...formData, images: newImages });
+                            }} className="text-sm bg-secondary/20 px-2 py-1 rounded disabled:opacity-50">
+                              ↓
+                            </button>
+                          </div>
+                        </div>
+                        <button type="button" onClick={() => {
+                          const newImages = [...formData.images];
+                          newImages.splice(idx, 1);
+                          setFormData({ ...formData, images: newImages });
+                        }} className="absolute top-2 left-2 p-1 bg-rose-500 text-white rounded-full hover:scale-110 transition-transform">
+                          <X size={14} />
+                        </button>
                       </div>
                     ))}
                   </div>
