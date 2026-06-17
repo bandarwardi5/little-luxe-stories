@@ -255,6 +255,9 @@ const dict: Record<Lang, Record<string, string>> = {
     "account.cod": "عند الاستلام",
     "account.order_details": "تفاصيل الطلب",
     "checkout.city_default": "إسطنبول",
+    "checkout.city": "المدينة *",
+    "checkout.district": "المنطقة / البلدية *",
+    "checkout.district_placeholder": "اسم المنطقة أو البلدية (مثال: الفاتح، كاديكوي)...",
   },
   tr: {
     "nav.home": "Ana Sayfa",
@@ -505,6 +508,9 @@ const dict: Record<Lang, Record<string, string>> = {
     "account.cod": "Kapıda Ödeme",
     "account.order_details": "Sipariş Detayları",
     "checkout.city_default": "İstanbul",
+    "checkout.city": "Şehir *",
+    "checkout.district": "İlçe *",
+    "checkout.district_placeholder": "İlçe adı giriniz (örn. Fatih, Kadıköy)...",
   },
   en: {
     "nav.home": "Home",
@@ -755,6 +761,9 @@ const dict: Record<Lang, Record<string, string>> = {
     "account.cod": "Cash on Delivery",
     "account.order_details": "Order Details",
     "checkout.city_default": "Istanbul",
+    "checkout.city": "City *",
+    "checkout.district": "District *",
+    "checkout.district_placeholder": "Enter district name (e.g. Fatih, Kadikoy)...",
   },
 };
 

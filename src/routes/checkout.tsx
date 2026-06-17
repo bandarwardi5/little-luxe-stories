@@ -31,6 +31,7 @@ function CheckoutPage() {
     phone: "",
     address: "",
     city: "",
+    district: "",
     paymentMethod: "cash_on_delivery",
     notes: "",
   });
@@ -69,7 +70,7 @@ function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.phone || !form.address) {
+    if (!form.name || !form.phone || !form.address || !form.city || !form.district) {
       toast.error(t("checkout.error_missing_fields"));
       return;
     }
@@ -82,6 +83,7 @@ function CheckoutPage() {
         email: form.email,
         phone: form.phone,
         address: form.address,
+        district: form.district,
         city: form.city || t("checkout.city_default"),
         items: items.map(i => ({ 
           id: i.id, 
@@ -219,6 +221,47 @@ function CheckoutPage() {
                     placeholder="‎+90 5XX XXX XXXX"
                     value={form.phone}
                     onChange={(e) => setForm({...form, phone: e.target.value})}
+                    className="w-full border rounded-xl px-4 py-3.5 bg-background outline-none focus:border-primary transition"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold block mb-2">{t("checkout.city")}</label>
+                  <select
+                    required
+                    value={form.city}
+                    onChange={(e) => setForm({...form, city: e.target.value})}
+                    className="w-full border rounded-xl px-4 py-3.5 bg-background outline-none focus:border-primary transition"
+                  >
+                    <option value="">{lang === "ar" ? "-- اختر المدينة --" : lang === "tr" ? "-- Şehir seçin --" : "-- Select city --"}</option>
+                    <option value="İstanbul">İstanbul</option>
+                    <option value="Ankara">Ankara</option>
+                    <option value="İzmir">İzmir</option>
+                    <option value="Bursa">Bursa</option>
+                    <option value="Antalya">Antalya</option>
+                    <option value="Adana">Adana</option>
+                    <option value="Gaziantep">Gaziantep</option>
+                    <option value="Konya">Konya</option>
+                    <option value="Kocaeli">Kocaeli</option>
+                    <option value="Mersin">Mersin</option>
+                    <option value="Diyarbakır">Diyarbakır</option>
+                    <option value="Kayseri">Kayseri</option>
+                    <option value="Eskişehir">Eskişehir</option>
+                    <option value="Sakarya">Sakarya</option>
+                    <option value="Trabzon">Trabzon</option>
+                    <option value="Samsun">Samsun</option>
+                    <option value="Çorum">Çorum</option>
+                    <option value="Malatya">Malatya</option>
+                    <option value="Şanlıurfa">Şanlıurfa</option>
+                    <option value="Hatay">Hatay</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold block mb-2">{t("checkout.district")}</label>
+                  <input
+                    required
+                    placeholder={t("checkout.district_placeholder")}
+                    value={form.district}
+                    onChange={(e) => setForm({...form, district: e.target.value})}
                     className="w-full border rounded-xl px-4 py-3.5 bg-background outline-none focus:border-primary transition"
                   />
                 </div>

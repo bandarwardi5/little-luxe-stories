@@ -72,9 +72,11 @@ function AdminOrders() {
         ? new Date(order.createdAt.seconds * 1000).toLocaleDateString('tr-TR') 
         : new Date().toLocaleDateString('tr-TR');
 
+      const districtCity = [order.district, order.city].filter(Boolean).join(', ');
+
       return `
         <div class="printable-label">
-          <!-- Header: Carrier Info & Shipment Details -->
+          <!-- Başlık: Kargo Bilgileri -->
           <div class="label-header">
             <div class="header-logo">TREEMASS EXPRESS</div>
             <div class="header-meta">
@@ -84,46 +86,47 @@ function AdminOrders() {
             </div>
           </div>
 
-          <!-- Main Barcode Section -->
+          <!-- Ana Barkod -->
           <div class="barcode-section">
             <div class="barcode-wrapper">
               <svg id="barcode-top-${order.id}"></svg>
             </div>
           </div>
 
-          <!-- Address & Sender Block -->
+          <!-- Alıcı ve Gönderici Bilgileri -->
           <div class="info-block">
             <div class="info-left">
-              <div class="info-section-title">ALICI / RECIPIENT</div>
-              <div class="recipient-name" dir="auto">${order.customerName || ""}</div>
-              <div class="recipient-address" dir="auto">${order.address || ""}</div>
-              <div class="recipient-city">${(order.city || "").toUpperCase()} / TURKEY</div>
-              <div class="recipient-phone">${order.phone || ""}</div>
+              <div class="info-section-title">ALICI BİLGİLERİ</div>
+              <div class="recipient-name">${order.customerName || ""}</div>
+              <div class="recipient-address">${order.address || ""}</div>
+              <div class="recipient-district">${districtCity || ""}</div>
+              <div class="recipient-city">${(order.city || "").toUpperCase()} / TÜRKİYE</div>
+              <div class="recipient-phone">Tel: ${order.phone || ""}</div>
             </div>
             <div class="info-right">
-              <div class="info-section-title">GÖNDERİCİ / SENDER</div>
+              <div class="info-section-title">GÖNDERİCİ</div>
               <div class="sender-name">TREEMASS</div>
-              <div class="sender-details">TREEMASS DEPO<br/>ISTANBUL / TURKEY</div>
+              <div class="sender-details">TREEMASS DEPO<br/>İSTANBUL / TÜRKİYE</div>
               <div class="vertical-barcode-container">
                 <svg id="barcode-vert-${order.id}"></svg>
               </div>
             </div>
           </div>
 
-          <!-- Route / Sorting Code Block -->
+          <!-- Sevk Bölgesi -->
           <div class="route-block">
-            <div class="route-title">SEVK BÖLGESİ / ROUTE CODE</div>
+            <div class="route-title">SEVK BÖLGESİ / ROTA KODU</div>
             <div class="route-value">${routeCode}</div>
           </div>
 
-          <!-- Footer Details -->
+          <!-- Alt Bilgiler -->
           <div class="label-footer">
             <div class="footer-left">
-              <div>Sipariş ID: ${order.id}</div>
+              <div>Sipariş No: ${order.id}</div>
               <div>Tel: ${order.phone || ""}</div>
             </div>
             <div class="footer-right">
-              <div class="destination-hub">${(order.city || "MERKEZ").toUpperCase()} ŞUBE</div>
+              <div class="destination-hub">${(order.district || order.city || "MERKEZ").toUpperCase()} ŞUBESİ</div>
             </div>
           </div>
         </div>
@@ -133,7 +136,7 @@ function AdminOrders() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>طباعة بوليصات الشحن</title>
+          <title>Kargo Etiketleri Yazdır</title>
           <style>
             body {
               font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -246,6 +249,12 @@ function AdminOrders() {
               line-height: 1.3;
               word-break: break-word;
               flex: 1;
+            }
+            .recipient-district {
+              font-size: 11px;
+              font-weight: 900;
+              color: #333;
+              font-family: 'Courier New', Courier, monospace;
             }
             .recipient-city {
               font-size: 12px;
