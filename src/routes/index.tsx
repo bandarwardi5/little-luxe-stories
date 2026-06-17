@@ -416,26 +416,39 @@ function Index() {
           <p className="text-xs tracking-widest text-primary font-bold text-center mb-2 font-ethno uppercase">Testimonials</p>
           <h2 className="text-3xl md:text-4xl font-black text-center mb-12 font-ethno">{t("home.testimonials.title")}</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: t("home.testimonials.client1.name"), role: t("home.testimonials.client1.role"), text: t("home.testimonials.client1.text"), color: "from-rose-100 to-pink-50" },
-              { name: t("home.testimonials.client2.name"), role: t("home.testimonials.client2.role"), text: t("home.testimonials.client2.text"), color: "from-amber-100 to-orange-50" },
-              { name: t("home.testimonials.client3.name"), role: t("home.testimonials.client3.role"), text: t("home.testimonials.client3.text"), color: "from-emerald-100 to-teal-50" },
-            ].map((tt) => (
-              <div key={tt.name} className={`bg-gradient-to-br ${tt.color} border border-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-shadow`}>
-                <div className="text-5xl text-primary/30 mb-3 leading-none">"</div>
-                <p className="text-sm leading-relaxed text-foreground/80 mb-6">{tt.text}</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary text-white grid place-items-center font-black text-lg shadow-md">
-                    {tt.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black">{tt.name}</h4>
-                    <p className="text-xs text-muted-foreground">{tt.role}</p>
+            {(() => {
+              const fallback = [
+                { name: t("home.testimonials.client1.name"), role: t("home.testimonials.client1.role"), text: t("home.testimonials.client1.text") },
+                { name: t("home.testimonials.client2.name"), role: t("home.testimonials.client2.role"), text: t("home.testimonials.client2.text") },
+                { name: t("home.testimonials.client3.name"), role: t("home.testimonials.client3.role"), text: t("home.testimonials.client3.text") },
+              ];
+              const colors = ["from-rose-100 to-pink-50", "from-amber-100 to-orange-50", "from-emerald-100 to-teal-50"];
+              const raw = (settings?.testimonials as any[]) || [];
+              const items = raw.length > 0
+                ? raw.filter((x: any) => x && (x.name || x.text)).map((x: any) => ({
+                    name: tl(x.name as any),
+                    role: tl(x.role as any),
+                    text: tl(x.text as any),
+                  }))
+                : fallback;
+              return items.map((tt, i) => (
+                <div key={i} className={`bg-gradient-to-br ${colors[i % colors.length]} border border-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-shadow`}>
+                  <div className="text-5xl text-primary/30 mb-3 leading-none">"</div>
+                  <p className="text-sm leading-relaxed text-foreground/80 mb-6">{tt.text}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary text-white grid place-items-center font-black text-lg shadow-md">
+                      {(tt.name || "?").charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black">{tt.name}</h4>
+                      <p className="text-xs text-muted-foreground">{tt.role}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
+
         </div>
       </section>
 
