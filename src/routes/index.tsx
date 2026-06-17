@@ -7,6 +7,7 @@ import {
   useCategories,
   useBanners,
   useHero,
+  useSettings,
 } from "@/lib/firestore-hooks";
 import {
   Carousel,
