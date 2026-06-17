@@ -290,45 +290,64 @@ function Index() {
         </div>
       </section>
 
-      {/* Collections Grid - Different from typical cards */}
-      <section className="container mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <p className="text-xs tracking-widest text-primary font-bold mb-2">{t("home.collections.pretitle")}</p>
-            <h2 className="text-2xl md:text-3xl font-bold">{t("home.collections")}</h2>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[600px] md:h-[500px]">
-          <Link to="/shop" className="relative group overflow-hidden rounded-2xl md:col-span-2 md:row-span-2">
-            <img src={heroKids} alt={t("home.collections.summer.title")} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-              <span className="bg-primary px-3 py-1 text-xs font-bold rounded-full mb-3 inline-block">{t("home.collections.badge")}</span>
-              <h3 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-md">{t("home.collections.summer.title")}</h3>
-              <p className="text-white/90 text-sm mb-4 max-w-md font-medium drop-shadow-sm">{t("home.collections.summer.desc")}</p>
-              <span className="inline-flex items-center gap-2 text-sm font-semibold hover:underline">
-                {t("home.collections.shop")} <span className="rotate-180">→</span>
-              </span>
+      {/* Collections Grid - dynamic from settings.collections */}
+      {(() => {
+        const fallbackCollections = [
+          { title: t("home.collections.summer.title"), description: t("home.collections.summer.desc"), image: heroKids, link: "/shop", badge: t("home.collections.badge"), featured: true },
+          { title: t("home.collections.boys.title"), image: bannerBoys, link: "/shop" },
+          { title: t("home.collections.girls.title"), image: bannerGirls, link: "/shop" },
+        ];
+        const raw = (settings?.collections as any[]) || [];
+        const cols = raw.length > 0
+          ? raw.filter((c: any) => c && (c.title || c.image)).map((c: any) => ({
+              title: tl(c.title as any),
+              description: tl(c.description as any),
+              image: c.image ? imageUrl(c.image) : heroKids,
+              link: c.link || "/shop",
+              badge: c.badge ? tl(c.badge as any) : "",
+              featured: !!c.featured,
+            }))
+          : fallbackCollections;
+
+        const featured = cols.find((c) => c.featured) || cols[0];
+        const others = cols.filter((c) => c !== featured).slice(0, 2);
+
+        return (
+          <section className="container mx-auto px-4 py-10">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <p className="text-xs tracking-widest text-primary font-bold mb-2">{t("home.collections.pretitle")}</p>
+                <h2 className="text-2xl md:text-3xl font-bold">{t("home.collections")}</h2>
+              </div>
             </div>
-          </Link>
-          <Link to="/shop" className="relative group overflow-hidden rounded-2xl md:col-span-1">
-            <img src={bannerBoys} alt={t("home.collections.boys.title")} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 text-center">
-              <h3 className="text-xl font-bold mb-2">{t("home.collections.boys.title")}</h3>
-              <span className="border border-white px-4 py-2 text-xs font-medium rounded hover:bg-white hover:text-black transition">{t("home.collections.discover")}</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[600px] md:h-[500px]">
+              <Link to={featured.link} className="relative group overflow-hidden rounded-2xl md:col-span-2 md:row-span-2">
+                <img src={featured.image} alt={featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  {featured.badge && <span className="bg-primary px-3 py-1 text-xs font-bold rounded-full mb-3 inline-block">{featured.badge}</span>}
+                  <h3 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-md">{featured.title}</h3>
+                  {featured.description && <p className="text-white/90 text-sm mb-4 max-w-md font-medium drop-shadow-sm">{featured.description}</p>}
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold hover:underline">
+                    {t("home.collections.shop")} <span className="rotate-180">→</span>
+                  </span>
+                </div>
+              </Link>
+              {others.map((c, i) => (
+                <Link key={i} to={c.link} className="relative group overflow-hidden rounded-2xl md:col-span-1">
+                  <img src={c.image} alt={c.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 text-center">
+                    <h3 className="text-xl font-bold mb-2">{c.title}</h3>
+                    <span className="border border-white px-4 py-2 text-xs font-medium rounded hover:bg-white hover:text-black transition">{t("home.collections.discover")}</span>
+                  </div>
+                </Link>
+              ))}
             </div>
-          </Link>
-          <Link to="/shop" className="relative group overflow-hidden rounded-2xl md:col-span-1">
-            <img src={bannerGirls} alt={t("home.collections.girls.title")} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 text-center">
-              <h3 className="text-xl font-bold mb-2">{t("home.collections.girls.title")}</h3>
-              <span className="border border-white px-4 py-2 text-xs font-medium rounded hover:bg-white hover:text-black transition">{t("home.collections.discover")}</span>
-            </div>
-          </Link>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
+
 
       {/* Shop by Age - Colorful Design */}
       {/* <section className="relative py-20 overflow-hidden bg-gradient-to-br from-banner-peach/40 via-white to-banner-mint/40">
