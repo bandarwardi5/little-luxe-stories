@@ -4,7 +4,7 @@ import { Footer } from "@/components/site/Footer";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
 import { db } from "@/lib/firebase";
-import { useSettings } from "@/lib/firestore-hooks";
+import { useSettings, useOffers } from "@/lib/firestore-hooks";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { CreditCard, Truck, ShieldCheck, ShoppingBag, Loader2, ArrowRight, CheckCircle2, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
