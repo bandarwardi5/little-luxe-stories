@@ -35,10 +35,53 @@ const getCityPlateCode = (city: string) => {
   return "34";
 };
 
+const STATUSES = {
+  all: {
+    label: "الكل",
+    desc: "عرض جميع الطلبات بدون تصفية",
+    color: "bg-secondary text-muted-foreground"
+  },
+  pending: {
+    label: "جديد (Yeni)",
+    desc: "تم إنشاء الطلب. لم تستلمه شركة الشحن بعد.",
+    color: "bg-blue-100 text-blue-800"
+  },
+  processing: {
+    label: "تمت المعالجة (İşleme Alınanlar)",
+    desc: "تم استلام الشحنة. تم طباعة البوليصة. دخلت مركز الفرز.",
+    color: "bg-amber-100 text-amber-800"
+  },
+  shipping: {
+    label: "قيد النقل (Taşıma Durumunda)",
+    desc: "الشحنة في الطريق بين المراكز. أو خرجت مع المندوب للتسليم.",
+    color: "bg-indigo-100 text-indigo-800"
+  },
+  delivered: {
+    label: "تم التسليم (Teslim Edilen)",
+    desc: "تم تسليم الشحنة للعميل.",
+    color: "bg-emerald-100 text-emerald-800"
+  },
+  reshipped: {
+    label: "إعادة الإرسال (Yeniden Gönderimler)",
+    desc: "فشل التسليم. أعيدت محاولة التوصيل. أو أعيد شحنها من جديد.",
+    color: "bg-purple-100 text-purple-800"
+  },
+  on_hold: {
+    label: "معلقة (Askıdaki Siparişler)",
+    desc: "عنوان غير مكتمل. رقم هاتف غير صحيح. بانتظار دفع. بانتظار مراجعة إدارية.",
+    color: "bg-rose-100 text-rose-800"
+  },
+  cancelled: {
+    label: "ملغي (İptal)",
+    desc: "تم إلغاء الطلب.",
+    color: "bg-neutral-100 text-neutral-800"
+  }
+};
+
 function AdminOrders() {
   const { data: orders, loading } = useOrders();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("الكل");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
@@ -400,11 +443,7 @@ function AdminOrders() {
   const filteredOrders = orders.filter(o => {
     const matchesSearch = o.id.toLowerCase().includes(search.toLowerCase()) || 
                          o.customerName?.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "الكل" || 
-                         (statusFilter === "قيد الانتظار" && o.status === "pending") ||
-                         (statusFilter === "قيد التنفيذ" && o.status === "processing") ||
-                         (statusFilter === "المكتملة" && o.status === "delivered") ||
-                         (statusFilter === "الملغية" && o.status === "cancelled");
+    const matchesStatus = statusFilter === "all" || o.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -419,23 +458,15 @@ function AdminOrders() {
   };
 
   const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "pending": return "قيد الانتظار";
-      case "processing": return "جاري التنفيذ";
-      case "delivered": return "تم التوصيل";
-      case "cancelled": return "ملغي";
-      default: return status;
-    }
+    return STATUSES[status as keyof typeof STATUSES]?.label || status;
   };
 
   const getStatusStyle = (status: string) => {
-    switch (status) {
-      case "delivered": return "bg-emerald-100 text-emerald-700";
-      case "processing": return "bg-blue-100 text-blue-700";
-      case "pending": return "bg-amber-100 text-amber-700";
-      case "cancelled": return "bg-rose-100 text-rose-700";
-      default: return "bg-secondary text-muted-foreground";
-    }
+    return STATUSES[status as keyof typeof STATUSES]?.color || "bg-secondary text-muted-foreground";
+  };
+
+  const getStatusDesc = (status: string) => {
+    return STATUSES[status as keyof typeof STATUSES]?.desc || "";
   };
 
   return (
@@ -452,19 +483,28 @@ function AdminOrders() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b gap-8 overflow-x-auto scrollbar-hide">
-        {["الكل", "قيد الانتظار", "قيد التنفيذ", "المكتملة", "الملغية"].map((tab, i) => (
-          <button 
-            key={i} 
-            onClick={() => setStatusFilter(tab)}
-            className={`pb-4 text-sm font-bold transition-colors relative whitespace-nowrap ${
-              statusFilter === tab ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {tab}
-            {statusFilter === tab && <span className="absolute bottom-0 right-0 left-0 h-1 bg-primary rounded-full"></span>}
-          </button>
-        ))}
+      <div className="space-y-4">
+        <div className="flex border-b gap-8 overflow-x-auto scrollbar-hide">
+          {Object.entries(STATUSES).map(([key, val]) => (
+            <button 
+              key={key} 
+              onClick={() => setStatusFilter(key)}
+              title={val.desc}
+              className={`pb-4 text-sm font-bold transition-colors relative whitespace-nowrap ${
+                statusFilter === key ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {val.label}
+              {statusFilter === key && <span className="absolute bottom-0 right-0 left-0 h-1 bg-primary rounded-full"></span>}
+            </button>
+          ))}
+        </div>
+        
+        {/* Active Status Info Bar */}
+        <div className="bg-secondary/20 px-4 py-2.5 rounded-xl text-xs text-muted-foreground flex items-center gap-2 animate-in fade-in duration-200">
+          <span className="font-black text-primary">💡 {STATUSES[statusFilter as keyof typeof STATUSES]?.label}:</span>
+          <span>{STATUSES[statusFilter as keyof typeof STATUSES]?.desc}</span>
+        </div>
       </div>
 
       {/* Search & Filter */}
@@ -557,9 +597,19 @@ function AdminOrders() {
                     </td>
                     <td className="px-6 py-4 font-black text-primary">{order.total} ل.ت</td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${getStatusStyle(order.status)}`}>
-                        {getStatusLabel(order.status)}
-                      </span>
+                      <div className="relative group inline-block">
+                        <span 
+                          title={getStatusDesc(order.status)}
+                          className={`px-3 py-1 rounded-full text-[10px] font-black cursor-help ${getStatusStyle(order.status)}`}
+                        >
+                          {getStatusLabel(order.status)}
+                        </span>
+                        {/* Custom Tooltip */}
+                        <div className="absolute z-30 bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-gray-900 text-white text-[11px] rounded-lg p-2 text-center shadow-lg font-normal leading-normal whitespace-normal transition-all duration-200">
+                          {getStatusDesc(order.status)}
+                          <div className="absolute top-full right-1/2 translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-left">
                       <button 
@@ -614,8 +664,18 @@ function AdminOrders() {
                 <div className="bg-secondary/20 p-4 rounded-2xl">
                   <h4 className="text-xs font-bold text-muted-foreground mb-3 uppercase">الدفع والحالة</h4>
                   <p className="text-sm font-bold">{selectedOrder.paymentMethod === 'cash_on_delivery' ? 'عند الاستلام' : selectedOrder.paymentMethod}</p>
-                  <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black mt-2 ${getStatusStyle(selectedOrder.status)}`}>
-                    {getStatusLabel(selectedOrder.status)}
+                  <div className="relative group inline-block mt-2">
+                    <span 
+                      title={getStatusDesc(selectedOrder.status)}
+                      className={`inline-block px-3 py-1 rounded-full text-[10px] font-black cursor-help ${getStatusStyle(selectedOrder.status)}`}
+                    >
+                      {getStatusLabel(selectedOrder.status)}
+                    </span>
+                    {/* Custom Tooltip */}
+                    <div className="absolute z-30 bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-gray-900 text-white text-[11px] rounded-lg p-2 text-center shadow-lg font-normal leading-normal whitespace-normal transition-all duration-200">
+                      {getStatusDesc(selectedOrder.status)}
+                      <div className="absolute top-full right-1/2 translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -654,15 +714,19 @@ function AdminOrders() {
                 <div className="space-y-2 w-full md:w-auto">
                   <h4 className="font-black mb-4">تحديث الحالة</h4>
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => updateStatus(selectedOrder.id, 'processing')} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 transition">
-                      <Truck size={16} /> جاري التنفيذ
-                    </button>
-                    <button onClick={() => updateStatus(selectedOrder.id, 'delivered')} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold hover:bg-emerald-100 transition">
-                      <CheckCircle2 size={16} /> تم التوصيل
-                    </button>
-                    <button onClick={() => updateStatus(selectedOrder.id, 'cancelled')} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 text-rose-700 text-sm font-bold hover:bg-rose-100 transition">
-                      <AlertCircle size={16} /> إلغاء الطلب
-                    </button>
+                    {Object.entries(STATUSES).map(([statusKey, statusVal]) => {
+                      if (statusKey === "all") return null;
+                      return (
+                        <button
+                          key={statusKey}
+                          onClick={() => updateStatus(selectedOrder.id, statusKey)}
+                          title={statusVal.desc}
+                          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition hover:opacity-90 ${statusVal.color} ${selectedOrder.status === statusKey ? 'ring-2 ring-primary ring-offset-2 font-black' : ''}`}
+                        >
+                          {statusVal.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 
