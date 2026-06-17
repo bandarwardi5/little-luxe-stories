@@ -22,6 +22,7 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const { settings } = useSettings();
+  const { data: offers } = useOffers();
   const { t, dir, lang } = useLang();
 
   const [form, setForm] = useState({
@@ -34,12 +35,29 @@ function CheckoutPage() {
     notes: "",
   });
 
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number; title?: any } | null>(null);
+
   const shippingFee = settings?.shippingFee ?? 50;
   const freeThreshold = settings?.freeShippingThreshold ?? 500;
-  
+
   const shipping = (freeThreshold > 0 && subtotal >= freeThreshold) ? 0 : shippingFee;
-  const finalTotal = subtotal + shipping;
+  const discountAmount = appliedCoupon ? Math.round((subtotal * appliedCoupon.discount) / 100) : 0;
+  const finalTotal = Math.max(0, subtotal - discountAmount + shipping);
   const currency = getLocalizedCurrency(settings?.currency, lang);
+
+  const applyCoupon = () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    const offer = offers.find((o: any) => (o.code || "").toUpperCase() === code && o.active !== false);
+    if (!offer) {
+      toast.error(lang === "ar" ? "كود الخصم غير صالح أو منتهي" : lang === "tr" ? "Geçersiz kupon kodu" : "Invalid coupon code");
+      return;
+    }
+    setAppliedCoupon({ code, discount: offer.discount || 0, title: offer.title });
+    toast.success(lang === "ar" ? `تم تطبيق خصم ${offer.discount}%` : lang === "tr" ? `${offer.discount}% indirim uygulandı` : `${offer.discount}% discount applied`);
+  };
+
 
   // Keep city in sync with default translation until user types something else
   useEffect(() => {
