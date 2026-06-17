@@ -20,6 +20,16 @@ type Ctx = {
 const WCtx = createContext<Ctx | null>(null);
 const KEY = "treemass_wishlist";
 
+// Read lang from localStorage without needing React context
+function getLang(): string {
+  try { return localStorage.getItem("lang") || "ar"; } catch { return "ar"; }
+}
+
+const toastMsg = {
+  added:   { ar: "تمت الإضافة إلى المفضلة",  tr: "Favorilere eklendi",      en: "Added to wishlist" },
+  removed: { ar: "تمت الإزالة من المفضلة",   tr: "Favorilerden kaldırıldı", en: "Removed from wishlist" },
+};
+
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -39,12 +49,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const has = useCallback((id: string) => items.some((i) => i.id === id), [items]);
 
   const toggle = useCallback((item: WishlistItem) => {
+    const lang = getLang() as keyof typeof toastMsg.added;
     setItems((prev) => {
       if (prev.some((p) => p.id === item.id)) {
-        toast.success("تمت الإزالة من المفضلة");
+        toast.success(toastMsg.removed[lang] ?? toastMsg.removed.ar);
         return prev.filter((p) => p.id !== item.id);
       }
-      toast.success("تمت الإضافة إلى المفضلة");
+      toast.success(toastMsg.added[lang] ?? toastMsg.added.ar);
       return [...prev, item];
     });
   }, []);

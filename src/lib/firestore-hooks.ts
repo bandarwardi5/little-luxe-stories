@@ -10,17 +10,32 @@ import {
   QueryConstraint,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Multilingual } from "./i18n";
+
+export type ProductVariation = {
+  color: Multilingual;
+  images?: string[];
+  video?: string;
+  sizes: Array<{
+    size: string;
+    stock: number;
+  }>;
+};
 
 export type FsProduct = {
   id: string;
-  name: string;
+  code?: string;
+  name: Multilingual;
   slug?: string;
   price: number;
   oldPrice?: number;
   image: string;
   images?: string[];
+  colors?: Multilingual[];
+  sizes?: string[];
+  variations?: ProductVariation[];
   category: string;
-  description: string;
+  description: Multilingual;
   inStock: number;
   rating?: number;
   badge?: string;

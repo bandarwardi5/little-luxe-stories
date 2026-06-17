@@ -2,16 +2,311 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useProducts, useCategories } from "@/lib/firestore-hooks";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
-import { Plus, Search, Edit2, Trash2, ExternalLink, Filter, Loader2, X, Save } from "lucide-react";
-import { useState } from "react";
+import { Plus, Search, Edit2, Trash2, ExternalLink, Filter, Loader2, X, Save, Upload } from "lucide-react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { MultiLangInput } from "@/components/admin/MultiLangInput";
 import { tl } from "@/lib/i18n";
+import { uploadImage, imageUrl } from "@/lib/firebase";
 
 export const Route = createFileRoute("/admin/products")({
   component: AdminProducts,
 });
+
+function VariationManager({ variations, onChange }: { variations: any[], onChange: (v: any[]) => void }) {
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+  const [uploadingVideoIdx, setUploadingVideoIdx] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [colorSearch, setColorSearch] = useState<{ [key: number]: string }>({});
+
+  const allPossibleColors = [
+    { ar: "أبيض", tr: "Beyaz", en: "White" },
+    { ar: "أسود", tr: "Siyah", en: "Black" },
+    { ar: "أحمر", tr: "Kırmızı", en: "Red" },
+    { ar: "أزرق", tr: "Mavi", en: "Blue" },
+    { ar: "أخضر", tr: "Yeşil", en: "Green" },
+    { ar: "أصفر", tr: "Sarı", en: "Yellow" },
+    { ar: "وردي", tr: "Pembe", en: "Pink" },
+    { ar: "بنفسجي", tr: "Mor", en: "Purple" },
+    { ar: "رمادي", tr: "Gri", en: "Grey" },
+    { ar: "بني", tr: "Kahverengi", en: "Brown" },
+    { ar: "برتقالي", tr: "Turuncu", en: "Orange" },
+    { ar: "كحلي", tr: "Lacivert", en: "Navy" },
+    { ar: "بيج", tr: "Bej", en: "Beige" },
+  ];
+
+  const normalizeArabic = (text: string) => {
+    return text
+      .replace(/[أإآ]/g, "ا")
+      .replace(/ة/g, "ه")
+      .replace(/ى/g, "ي")
+      .toLowerCase();
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, variationIdx: number) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploadingIdx(variationIdx);
+    try {
+      const newImages = [...(variations[variationIdx].images || [])];
+      for (let i = 0; i < files.length; i++) {
+        const url = await uploadImage(files[i]);
+        newImages.push(url);
+      }
+      const newVariations = [...variations];
+      newVariations[variationIdx].images = newImages;
+      onChange(newVariations);
+      toast.success("تم رفع الصور بنجاح");
+    } catch (error) {
+      toast.error("فشل رفع الصور");
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>, variationIdx: number) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploadingVideoIdx(variationIdx);
+    try {
+      const url = await uploadImage(files[0]); // Uses standard endpoint which supports videos
+      const newVariations = [...variations];
+      newVariations[variationIdx].video = url;
+      onChange(newVariations);
+      toast.success("تم رفع الفيديو بنجاح");
+    } catch (error) {
+      toast.error("فشل رفع الفيديو");
+    } finally {
+      setUploadingVideoIdx(null);
+    }
+  };
+
+  return (
+    <div className="md:col-span-2 space-y-4 border-t pt-6 text-right">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-lg">متغيرات المنتج (اللون، الفيديو، الصور، المقاسات)</h3>
+        <button
+          type="button"
+          onClick={() => {
+            onChange([...variations, { color: { ar: "", tr: "", en: "" }, images: [], video: "", sizes: [{ size: "", stock: 10 }] }]);
+          }}
+          className="text-xs bg-primary text-white px-4 py-2 rounded-xl font-bold hover:opacity-90 transition-colors"
+        >
+          + إضافة لون جديد
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        {variations.map((v, idx) => {
+          const search = colorSearch[idx] || "";
+          const normalizedSearch = normalizeArabic(search);
+          const filteredColors = allPossibleColors.filter(c => 
+            normalizeArabic(c.ar).includes(normalizedSearch) || 
+            c.tr.toLowerCase().includes(normalizedSearch) || 
+            c.en.toLowerCase().includes(normalizedSearch)
+          );
+
+          return (
+            <div key={idx} className="p-5 border-2 border-dashed rounded-3xl bg-secondary/5 space-y-4 relative">
+              <button 
+                type="button" 
+                onClick={() => {
+                  const next = [...variations];
+                  next.splice(idx, 1);
+                  onChange(next);
+                }} 
+                className="absolute top-2 left-2 text-rose-500 hover:text-rose-700 p-1 bg-white rounded-full shadow border"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                {/* Color with Search and Manual Entry */}
+                <div className="relative group">
+                  <label className="text-xs font-bold block mb-1 text-slate-700">اللون *</label>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="ابحث عن لون أو اكتب يدوياً..."
+                        value={search || tl(v.color, "ar")}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setColorSearch({ ...colorSearch, [idx]: val });
+                          const next = [...variations];
+                          next[idx].color = { ...next[idx].color, ar: val };
+                          onChange(next);
+                        }}
+                        className="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary text-right"
+                      />
+                    </div>
+                    {search && filteredColors.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border rounded-xl shadow-xl max-h-40 overflow-y-auto">
+                        {filteredColors.map((c, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              const next = [...variations];
+                              next[idx].color = c;
+                              onChange(next);
+                              setColorSearch({ ...colorSearch, [idx]: "" });
+                            }}
+                            className="w-full text-right px-4 py-2 text-xs hover:bg-secondary transition-colors border-b last:border-0"
+                          >
+                            {c.ar} ({c.tr} / {c.en})
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Video Option */}
+                <div>
+                  <label className="text-xs font-bold block mb-1 text-slate-700">فيديو اللون (رابط أو رفع من الجهاز)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="رابط الفيديو (YouTube أو مباشر)..."
+                      value={v.video || ""}
+                      onChange={(e) => {
+                        const next = [...variations];
+                        next[idx].video = e.target.value;
+                        onChange(next);
+                      }}
+                      className="w-full border rounded-xl px-3 py-2 text-xs outline-none focus:border-primary text-right"
+                    />
+                    
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      id={`video-upload-${idx}`}
+                      onChange={(e) => handleVideoUpload(e, idx)}
+                    />
+                    <label
+                      htmlFor={`video-upload-${idx}`}
+                      className="px-3 py-2 border rounded-xl text-xs font-bold bg-secondary hover:bg-secondary/80 cursor-pointer flex items-center justify-center shrink-0"
+                    >
+                      {uploadingVideoIdx === idx ? <Loader2 className="animate-spin w-4 h-4" /> : "رفع فيديو"}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Images with upload */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold block text-slate-700">صور هذا اللون *</label>
+                <div className="flex flex-wrap gap-2">
+                  {(v.images || []).map((img: string, imgIdx: number) => (
+                    <div key={imgIdx} className="relative w-16 h-16 border rounded-lg overflow-hidden group">
+                      <img src={imageUrl(img)} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = [...variations];
+                          next[idx].images.splice(imgIdx, 1);
+                          onChange(next);
+                        }}
+                        className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    id={`var-upload-${idx}`}
+                    onChange={(e) => handleUpload(e, idx)}
+                  />
+                  <label
+                    htmlFor={`var-upload-${idx}`}
+                    className="w-16 h-16 border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer"
+                  >
+                    {uploadingIdx === idx ? <Loader2 className="animate-spin w-5 h-5" /> : <Upload size={20} />}
+                  </label>
+                </div>
+              </div>
+
+              {/* Sizes list */}
+              <div className="border-t pt-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700">مقاسات ومخزون هذا اللون</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = [...variations];
+                      next[idx].sizes = [...(next[idx].sizes || []), { size: "", stock: 10 }];
+                      onChange(next);
+                    }}
+                    className="text-[10px] bg-secondary text-foreground px-3 py-1.5 rounded-lg font-bold hover:bg-secondary/80 transition-colors"
+                  >
+                    + إضافة مقاس
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {(v.sizes || []).map((s: any, sIdx: number) => (
+                    <div key={sIdx} className="flex items-center gap-3 bg-white p-3 rounded-2xl border">
+                      <div className="flex-1">
+                        <label className="text-[10px] font-bold block mb-1 text-slate-600">المقاس</label>
+                        <input
+                          type="text"
+                          placeholder="مثال: 3 سنوات، XL..."
+                          value={s.size}
+                          onChange={(e) => {
+                            const next = [...variations];
+                            next[idx].sizes[sIdx].size = e.target.value;
+                            onChange(next);
+                          }}
+                          className="w-full border rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-primary text-right"
+                        />
+                      </div>
+
+                      <div className="w-28">
+                        <label className="text-[10px] font-bold block mb-1 text-slate-600">المخزون</label>
+                        <input
+                          type="number"
+                          value={s.stock}
+                          onChange={(e) => {
+                            const next = [...variations];
+                            next[idx].sizes[sIdx].stock = Number(e.target.value);
+                            onChange(next);
+                          }}
+                          className="w-full border rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-primary text-right"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = [...variations];
+                          next[idx].sizes.splice(sIdx, 1);
+                          onChange(next);
+                        }}
+                        className="text-rose-500 hover:text-rose-700 self-end mb-1.5"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function AdminProducts() {
   const { data: products, loading } = useProducts();
@@ -22,36 +317,63 @@ function AdminProducts() {
   const [formLoading, setFormLoading] = useState(false);
 
   const [formData, setFormData] = useState<any>({
+    code: "",
     name: { ar: "", tr: "", en: "" },
     price: 0,
     oldPrice: 0,
     category: "",
-    inStock: 10,
     description: { ar: "", tr: "", en: "" },
     image: "",
     images: [] as string[],
-    colors: [] as string[],
+    colors: [] as any[],
     sizes: [] as string[],
+    variations: [] as any[],
   });
 
   const filteredProducts = products.filter(p =>
-    tl(p.name as any, "ar").toLowerCase().includes(search.toLowerCase()) ||
-    tl(p.category as any, "ar").toLowerCase().includes(search.toLowerCase())
+    tl(p.name, "ar").toLowerCase().includes(search.toLowerCase()) ||
+    tl(p.category as any, "ar").toLowerCase().includes(search.toLowerCase()) ||
+    (p.code && p.code.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const handleCodeBlur = (code: string) => {
+    if (!editingProduct && code.trim()) {
+      const matched = products.find(
+        (p: any) => p.code && p.code.trim().toLowerCase() === code.trim().toLowerCase()
+      );
+      if (matched) {
+        setFormData({
+          code: code,
+          name: typeof matched.name === "string" ? { ar: matched.name, tr: "", en: "" } : matched.name || { ar: "", tr: "", en: "" },
+          price: matched.price || 0,
+          oldPrice: matched.oldPrice || 0,
+          category: matched.category || "",
+          description: typeof matched.description === "string" ? { ar: matched.description, tr: "", en: "" } : matched.description || { ar: "", tr: "", en: "" },
+          image: matched.image || "",
+          images: matched.images || [],
+          colors: matched.colors || [],
+          sizes: matched.sizes || [],
+          variations: matched.variations || [],
+        });
+        toast.success("تم العثور على منتج بنفس الكود. تم ملء الحقول تلقائياً.");
+      }
+    }
+  };
 
   const handleEdit = (product: any) => {
     setEditingProduct(product);
     setFormData({
-      name: typeof product.name === "string" ? { ar: product.name } : product.name || { ar: "" },
+      code: product.code || "",
+      name: typeof product.name === "string" ? { ar: product.name, tr: "", en: "" } : product.name || { ar: "", tr: "", en: "" },
       price: product.price,
       oldPrice: product.oldPrice || 0,
       category: product.category,
-      inStock: product.inStock,
-      description: typeof product.description === "string" ? { ar: product.description } : product.description || { ar: "" },
-      image: product.image,
+      description: typeof product.description === "string" ? { ar: product.description, tr: "", en: "" } : product.description || { ar: "", tr: "", en: "" },
+      image: product.image || "",
       images: product.images || [],
       colors: (product.colors || []).map((c: any) => typeof c === "string" ? { ar: c, tr: "", en: "" } : c),
       sizes: product.sizes || [],
+      variations: product.variations || [],
     });
     setIsMenuOpen(true);
   };
@@ -71,11 +393,24 @@ function AdminProducts() {
     e.preventDefault();
     setFormLoading(true);
     try {
+      // Auto-compute main image, all images, derived colors, derived sizes and inStock
+      const mainImage = formData.variations?.[0]?.images?.[0] || "";
+      const allImages = Array.from(new Set(formData.variations?.flatMap((v: any) => v.images || []) || [])) as string[];
+      const totalStock = formData.variations?.reduce((acc: number, v: any) => 
+        acc + (v.sizes?.reduce((sum: number, s: any) => sum + (Number(s.stock) || 0), 0) || 0)
+      , 0) || 0;
+      const derivedColors = formData.variations?.map((v: any) => v.color) || [];
+      const derivedSizes = Array.from(new Set(formData.variations?.flatMap((v: any) => v.sizes?.map((s: any) => s.size) || []) || [])) as string[];
+
       const data = {
         ...formData,
         price: Number(formData.price),
         oldPrice: Number(formData.oldPrice),
-        inStock: Number(formData.inStock),
+        image: mainImage,
+        images: allImages,
+        colors: derivedColors,
+        sizes: derivedSizes,
+        inStock: totalStock,
         updatedAt: serverTimestamp(),
       };
 
@@ -101,20 +436,19 @@ function AdminProducts() {
   const resetForm = () => {
     setEditingProduct(null);
     setFormData({
+      code: "",
       name: { ar: "", tr: "", en: "" },
       price: 0,
       oldPrice: 0,
-      category: categories[0] ? tl(categories[0].name as any, "ar") : "",
-      inStock: 10,
+      category: categories[0] ? (typeof categories[0].name === "string" ? categories[0].name : (categories[0].name as any)?.ar) : "",
       description: { ar: "", tr: "", en: "" },
       image: "",
       images: [],
       colors: [],
       sizes: [],
+      variations: [],
     });
   };
-
-
 
   return (
     <div className="space-y-8 text-right" dir="rtl">
@@ -140,14 +474,14 @@ function AdminProducts() {
             type="text" 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="ابحث بالاسم أو القسم..." 
+            placeholder="ابحث بالاسم، الكود، أو القسم..." 
             className="w-full bg-secondary/30 border-none rounded-xl pr-10 pl-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none text-right"
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto">
           <select className="flex-1 md:flex-none border rounded-xl px-4 py-2.5 text-sm font-bold bg-transparent outline-none text-right">
             <option>جميع الأقسام</option>
-            {categories.map(c => <option key={c.id} value={tl(c.name as any, "ar")}>{tl(c.name as any, "ar")}</option>)}
+            {categories.map(c => <option key={c.id} value={typeof c.name === "string" ? c.name : (c.name as any)?.ar}>{tl(c.name as any, "ar")}</option>)}
           </select>
         </div>
       </div>
@@ -174,11 +508,14 @@ function AdminProducts() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg bg-secondary/50 overflow-hidden shrink-0">
-                          <img src={product.image} alt={tl(product.name as any, "ar")} className="w-full h-full object-contain p-1" />
+                          <img src={product.image} alt={tl(product.name, "ar")} className="w-full h-full object-contain p-1" />
                         </div>
                         <div>
-                          <h4 className="font-bold line-clamp-1">{tl(product.name as any, "ar")}</h4>
-                          <p className="text-[10px] text-muted-foreground">ID: #{product.id.slice(0, 8)}</p>
+                          <h4 className="font-bold line-clamp-1">{tl(product.name, "ar")}</h4>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {product.code && <span className="text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-mono font-bold">كود: {product.code}</span>}
+                            <span className="text-[10px] text-muted-foreground">ID: #{product.id.slice(0, 8)}</span>
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -230,6 +567,19 @@ function AdminProducts() {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto text-right">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-sm font-bold block mb-2 text-slate-700">كود المنتج (يدوي) *</label>
+                  <input 
+                    type="text"
+                    required
+                    value={formData.code || ""}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    onBlur={(e) => handleCodeBlur(e.target.value)}
+                    placeholder="TM-514..."
+                    className="w-full border rounded-xl px-4 py-2.5 outline-none text-right font-bold focus:border-primary"
+                  />
+                </div>
+
                 <div className="md:col-span-2">
                   <MultiLangInput
                     label="اسم المنتج"
@@ -240,183 +590,45 @@ function AdminProducts() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-bold block mb-2">القسم *</label>
-                  <select
+                  <label className="text-sm font-bold block mb-2 text-slate-700">الفئة *</label>
+                  <select 
                     required
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full border rounded-xl px-4 py-2.5 outline-none text-right"
+                    className="w-full border rounded-xl px-4 py-2.5 outline-none focus:border-primary transition appearance-none bg-background text-right"
                   >
-                    <option value="">اختر قسماً</option>
-                    {categories.map(c => <option key={c.id} value={tl(c.name as any, "ar")}>{tl(c.name as any, "ar")}</option>)}
+                    <option value="">اختر فئة</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={typeof c.name === "string" ? c.name : (c.name as any)?.ar}>{tl(c.name as any, "ar")}</option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-sm font-bold block mb-2">المخزون *</label>
-                  <input 
-                    type="number"
-                    required
-                    value={formData.inStock}
-                    onChange={(e) => setFormData({...formData, inStock: Number(e.target.value)})}
-                    className="w-full border rounded-xl px-4 py-2.5 outline-none text-right"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-bold block mb-2">السعر الحالي (ل.ت) *</label>
+                  <label className="text-sm font-bold block mb-2 text-slate-700">السعر الحالي (ل.ت) *</label>
                   <input 
                     type="number"
                     required
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: Number(e.target.value)})}
-                    className="w-full border rounded-xl px-4 py-2.5 outline-none text-right font-bold text-primary"
+                    className="w-full border rounded-xl px-4 py-2.5 outline-none text-right font-bold text-primary focus:border-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-bold block mb-2">السعر قبل الخصم (اختياري)</label>
+                  <label className="text-sm font-bold block mb-2 text-slate-700">السعر قبل الخصم (اختياري)</label>
                   <input 
                     type="number"
                     value={formData.oldPrice}
                     onChange={(e) => setFormData({...formData, oldPrice: Number(e.target.value)})}
-                    className="w-full border rounded-xl px-4 py-2.5 outline-none text-right text-muted-foreground line-through"
+                    className="w-full border rounded-xl px-4 py-2.5 outline-none text-right text-muted-foreground line-through focus:border-primary"
                   />
                 </div>
 
-                {/* === Images: main + gallery with ordering === */}
-                <div className="md:col-span-2 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm">صور المنتج</h3>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, images: [...formData.images, ""] })}
-                      className="text-xs bg-secondary px-3 py-1 rounded-lg font-bold hover:bg-primary hover:text-white transition-colors"
-                    >
-                      + إضافة صورة
-                    </button>
-                  </div>
-
-                  <ImageUpload
-                    label="الصورة الرئيسية (الغلاف)"
-                    value={formData.image}
-                    onChange={(url) => setFormData({ ...formData, image: url })}
-                  />
-
-                  {formData.images.length > 0 && (
-                    <div className="space-y-3">
-                      <p className="text-xs font-bold text-muted-foreground">معرض الصور — اسحب لإعادة الترتيب أو حدد صورة رئيسية</p>
-                      {formData.images.map((img: string, idx: number) => (
-                        <div key={idx} className="relative p-3 border rounded-2xl bg-secondary/10 flex items-center gap-3">
-                          <span className="w-6 h-6 grid place-items-center rounded-full bg-primary text-white text-xs font-bold shrink-0">{idx + 1}</span>
-                          {img ? (
-                            <img src={img} alt={`صورة ${idx + 1}`} className="w-20 h-20 object-cover rounded-lg shrink-0" />
-                          ) : (
-                            <div className="w-20 h-20 rounded-lg bg-secondary/40 shrink-0" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <ImageUpload
-                              label={`صورة ${idx + 1}`}
-                              value={img}
-                              onChange={(url) => {
-                                const newImages = [...formData.images];
-                                newImages[idx] = url;
-                                setFormData({ ...formData, images: newImages });
-                              }}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1 shrink-0">
-                            <div className="flex gap-1">
-                              <button type="button" disabled={idx === 0} onClick={() => {
-                                const newImages = [...formData.images];
-                                [newImages[idx - 1], newImages[idx]] = [newImages[idx], newImages[idx - 1]];
-                                setFormData({ ...formData, images: newImages });
-                              }} className="px-2 py-1 text-sm bg-secondary/40 rounded disabled:opacity-30">↑</button>
-                              <button type="button" disabled={idx === formData.images.length - 1} onClick={() => {
-                                const newImages = [...formData.images];
-                                [newImages[idx + 1], newImages[idx]] = [newImages[idx], newImages[idx + 1]];
-                                setFormData({ ...formData, images: newImages });
-                              }} className="px-2 py-1 text-sm bg-secondary/40 rounded disabled:opacity-30">↓</button>
-                            </div>
-                            <button type="button" disabled={!img} onClick={() => {
-                              const mainImg = img;
-                              const oldMain = formData.image;
-                              const newImages = [...formData.images];
-                              newImages[idx] = oldMain;
-                              setFormData({ ...formData, image: mainImg, images: newImages });
-                            }} className="text-[11px] text-primary hover:underline disabled:opacity-30 whitespace-nowrap">
-                              تعيين كرئيسية
-                            </button>
-                            <button type="button" onClick={() => {
-                              const newImages = [...formData.images];
-                              newImages.splice(idx, 1);
-                              setFormData({ ...formData, images: newImages });
-                            }} className="text-[11px] text-rose-500 hover:underline">
-                              حذف
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* === Colors (multilingual) === */}
-                <div className="md:col-span-2">
-                  <label className="text-sm font-bold block mb-2">الألوان</label>
-                  <div className="space-y-2">
-                    {formData.colors.map((c: any, idx: number) => (
-                      <div key={idx} className="flex items-start gap-2 p-3 bg-secondary/10 rounded-xl">
-                        <div className="flex-1">
-                          <MultiLangInput
-                            label={`لون ${idx + 1}`}
-                            value={c}
-                            onChange={(v) => {
-                              const newColors = [...formData.colors];
-                              newColors[idx] = v;
-                              setFormData({ ...formData, colors: newColors });
-                            }}
-                          />
-                        </div>
-                        <button type="button" onClick={() => {
-                          const newColors = [...formData.colors];
-                          newColors.splice(idx, 1);
-                          setFormData({ ...formData, colors: newColors });
-                        }} className="p-2 text-rose-500 hover:bg-rose-50 rounded mt-6">
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))}
-                    <button type="button" onClick={() => setFormData({ ...formData, colors: [...formData.colors, { ar: "", tr: "", en: "" }] })} className="text-primary hover:underline text-sm font-bold">
-                      + إضافة لون
-                    </button>
-                  </div>
-                </div>
-
-                {/* === Sizes === */}
-                <div className="md:col-span-2">
-                  <label className="text-sm font-bold block mb-2">المقاسات (مثال: S, M, L, 2-3 سنوات)</label>
-                  <div className="flex flex-wrap gap-2 items-center">
-                    {formData.sizes.map((s: string, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1 bg-secondary/30 px-3 py-1 rounded-full">
-                        <span className="text-sm font-bold">{s}</span>
-                        <button type="button" onClick={() => {
-                          const newSizes = [...formData.sizes];
-                          newSizes.splice(idx, 1);
-                          setFormData({ ...formData, sizes: newSizes });
-                        }} className="text-rose-500 hover:text-rose-700">
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                    <button type="button" onClick={() => {
-                      const newSize = prompt('أدخل المقاس');
-                      if (newSize) setFormData({ ...formData, sizes: [...formData.sizes, newSize] });
-                    }} className="text-primary hover:underline text-sm font-bold">
-                      + إضافة مقاس
-                    </button>
-                  </div>
-                </div>
+                <VariationManager
+                  variations={formData.variations || []}
+                  onChange={(v) => setFormData({ ...formData, variations: v })}
+                />
 
                 {/* === Description multilingual === */}
                 <div className="md:col-span-2">
@@ -429,7 +641,6 @@ function AdminProducts() {
                   />
                 </div>
               </div>
-
 
               <div className="pt-6 border-t flex gap-3">
                 <button 

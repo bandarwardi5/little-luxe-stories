@@ -24,6 +24,17 @@ type Ctx = {
 const CartCtx = createContext<Ctx | null>(null);
 const KEY = "treemass_cart";
 
+// Read lang from localStorage without needing React context
+function getLang(): string {
+  try { return localStorage.getItem("lang") || "ar"; } catch { return "ar"; }
+}
+
+const addedMsg: Record<string, string> = {
+  ar: "تمت الإضافة إلى السلة",
+  tr: "Sepete eklendi",
+  en: "Added to cart",
+};
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -50,7 +61,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { ...item, quantity: qty }];
     });
-    toast.success("تمت الإضافة إلى السلة");
+    const lang = getLang();
+    toast.success(addedMsg[lang] ?? addedMsg.ar);
   }, []);
 
   const remove = useCallback((id: string) => {

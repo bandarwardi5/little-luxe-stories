@@ -1,21 +1,40 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Search, User, Heart, ShoppingBag, Sparkles, Menu, X } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useSettings } from "@/lib/firestore-hooks";
-import { useLang } from "@/lib/i18n";
+import { useLang, getLocalizedCurrency } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
+import { useAuth } from "@/lib/auth-context";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { count: cartCount, total: cartTotal } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { settings } = useSettings();
-  const { t, dir } = useLang();
+  const { t, dir, lang } = useLang();
+  const { user, firebaseUser } = useAuth();
+  
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const currency = settings?.currency || "ل.ت";
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate({
+      to: "/shop",
+      search: {
+        search: searchQuery || undefined,
+        category: undefined,
+      }
+    });
+  };
+
+  const currency = getLocalizedCurrency(settings?.currency, lang);
+
+  const isUserLoggedIn = !!firebaseUser;
+  const userDisplayName = user?.displayName || firebaseUser?.displayName || t("header.account");
 
   return (
     <header className="w-full relative" dir={dir}>
@@ -53,22 +72,26 @@ export function Header() {
             </Link>
           </div>
 
-          <div className="flex-1 hidden md:flex items-stretch rounded-md border bg-secondary overflow-hidden">
+          <form onSubmit={handleSearch} className="flex-1 hidden md:flex items-center rounded-full border border-secondary/80 bg-secondary/20 hover:border-primary/50 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 overflow-hidden h-12 shadow-sm">
             <input
               placeholder={t("header.search")}
-              className="flex-1 bg-transparent px-4 text-sm outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-transparent px-6 text-sm outline-none border-none placeholder:text-muted-foreground/60 text-start"
             />
-            <button className="bg-primary text-primary-foreground px-4">
+            <button type="submit" className="bg-primary hover:bg-primary/95 text-primary-foreground px-6 h-full flex items-center justify-center transition-colors cursor-pointer shrink-0">
               <Search className="h-4 w-4" />
             </button>
-          </div>
+          </form>
 
           <div className="flex items-center gap-3 sm:gap-5 text-sm shrink-0">
-            <Link to="/login" className="flex items-center gap-2 hover:text-primary transition-colors">
+            <Link to={isUserLoggedIn ? "/account" : "/login"} className="flex items-center gap-2 hover:text-primary transition-colors">
               <User className="h-5 w-5" />
               <span className="hidden sm:flex flex-col leading-tight">
-                <span className="text-xs text-muted-foreground font-cairo">{t("header.account")}</span>
-                <span className="font-bold">{t("header.login")}</span>
+                <span className="text-xs text-muted-foreground font-cairo line-clamp-1 max-w-[100px]">
+                  {isUserLoggedIn ? t("header.account") : t("header.login")}
+                </span>
+                <span className="font-bold line-clamp-1 max-w-[100px]">{userDisplayName}</span>
               </span>
             </Link>
             <Link to="/wishlist" className="relative hover:text-primary transition-colors group">
@@ -131,12 +154,17 @@ export function Header() {
           </div>
 
           <div className="p-4 border-b">
-            <div className="flex items-stretch rounded-md border bg-secondary overflow-hidden">
-              <input placeholder={t("header.search")} className="flex-1 bg-transparent px-3 py-2 text-sm outline-none" />
-              <button className="bg-primary text-primary-foreground px-3">
+            <form onSubmit={handleSearch} className="flex items-center rounded-full border border-secondary/80 bg-secondary/20 hover:border-primary/50 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 overflow-hidden h-11 shadow-sm">
+              <input 
+                placeholder={t("header.search")} 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 bg-transparent px-4 py-2 text-sm outline-none border-none placeholder:text-muted-foreground/60 text-start" 
+              />
+              <button type="submit" className="bg-primary hover:bg-primary/95 text-primary-foreground px-5 h-full flex items-center justify-center transition-colors cursor-pointer shrink-0">
                 <Search className="h-4 w-4" />
               </button>
-            </div>
+            </form>
           </div>
 
           <nav className="flex-1 overflow-y-auto py-4 px-2">

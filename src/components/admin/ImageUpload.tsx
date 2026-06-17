@@ -95,18 +95,8 @@ export function ImageUpload({ value, onChange, label = "صورة المنتج" }
               className="hidden"
             />
           </div>
-          
-          <div className="relative">
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder="أو أدخل رابط الصورة يدوياً..."
-              className="w-full pr-4 pl-4 py-2.5 bg-secondary/50 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-            />
-          </div>
           <p className="text-[10px] text-muted-foreground leading-relaxed">
-            * يمكنك رفع ملف (JPG, PNG, WebP) بحد أقصى 5 ميجابايت، أو استخدام رابط خارجي.
+            * يمكنك رفع ملف (JPG, PNG, WebP) بحد أقصى 5 ميجابايت.
           </p>
         </div>
       </div>

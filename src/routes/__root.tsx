@@ -10,6 +10,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { LanguageProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
+import { FloatingWhatsApp } from "@/components/site/FloatingWhatsApp";
 
 function NotFoundComponent() {
   return (
@@ -85,6 +86,7 @@ function RootComponent() {
             <WishlistProvider>
               <Outlet />
               <Toaster />
+              <FloatingWhatsApp />
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

@@ -92,7 +92,7 @@ function AdminCategories() {
           <h1 className="text-2xl font-black mb-1">إدارة الأقسام</h1>
           <p className="text-muted-foreground">تنظيم تصنيفات المتجر والأقسام الرئيسية.</p>
         </div>
-        <button 
+        <button
           onClick={() => { resetForm(); setIsModalOpen(true); }}
           className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
         >
@@ -112,19 +112,16 @@ function AdminCategories() {
                   {category.image ? <img src={category.image} className="w-full h-full object-contain" /> : <ImageIcon size={80} />}
                 </div>
                 <h3 className="text-xl font-black relative z-10">{tl(category.name as any, "ar")}</h3>
-                <div className="bg-white/40 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-black relative z-10">
-                  {category.count || 0} منتج
-                </div>
               </div>
-              
+
               <div className="p-6 flex items-center justify-between bg-white">
                 <div className="flex items-center gap-2">
-                  <button 
+                  <button
                     onClick={() => handleEdit(category)}
                     className="p-2.5 rounded-xl bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-white transition-all">
                     <Edit2 size={18} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDelete(category.id)}
                     className="p-2.5 rounded-xl bg-secondary/50 text-muted-foreground hover:bg-rose-500 hover:text-white transition-all">
                     <Trash2 size={18} />
@@ -135,7 +132,7 @@ function AdminCategories() {
           ))}
 
           {/* Add Category Card */}
-          <button 
+          <button
             onClick={() => { resetForm(); setIsModalOpen(true); }}
             className="border-2 border-dashed border-muted rounded-2xl flex flex-col items-center justify-center p-12 gap-4 text-muted-foreground hover:border-primary hover:text-primary transition-all group min-h-[200px]"
           >
@@ -157,7 +154,7 @@ function AdminCategories() {
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-6 text-right">
               <div>
                 <MultiLangInput
@@ -167,9 +164,9 @@ function AdminCategories() {
                   onChange={(v) => setFormData({ ...formData, name: v })}
                 />
               </div>
-              
+
               <div className="md:col-span-2">
-                <ImageUpload 
+                <ImageUpload
                   label="أيقونة القسم"
                   value={formData.image}
                   onChange={(url) => setFormData({ ...formData, image: url })}
@@ -178,9 +175,9 @@ function AdminCategories() {
 
               <div>
                 <label className="text-sm font-bold block mb-2">لون الخلفية (Tailwind class)</label>
-                <select 
+                <select
                   value={formData.color}
-                  onChange={(e) => setFormData({...formData, color: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                   className="w-full border rounded-xl px-4 py-2.5 outline-none text-right"
                 >
                   <option value="bg-blue-100">أزرق فاتح</option>
@@ -193,7 +190,7 @@ function AdminCategories() {
               </div>
 
               <div className="pt-6 border-t flex gap-3">
-                <button 
+                <button
                   type="submit"
                   disabled={formLoading}
                   className="flex-1 bg-primary text-primary-foreground font-bold py-3 rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition flex items-center justify-center gap-2"
@@ -201,7 +198,7 @@ function AdminCategories() {
                   {formLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Save size={20} />}
                   {editingCategory ? "حفظ التغييرات" : "إضافة القسم"}
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 bg-secondary text-foreground font-bold py-3 rounded-xl hover:bg-secondary/80 transition"

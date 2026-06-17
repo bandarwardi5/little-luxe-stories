@@ -168,16 +168,23 @@ async function seed() {
   } else console.log("💰 offers already populated, skipping.");
 
   // Settings (site-wide)
-  await setDoc(doc(db, "settings", "site"), {
-    storeName: "Treemass",
-    contactEmail: "treemass4a@gmail.com",
+  const defaultSettings = {
+    siteName: "Treemass Kids",
+    siteDescription: "أفضل ملابس الأطفال في إسطنبول",
+    contactEmail: "info@treemass.com.tr",
     contactPhone: "+90 507 022 2149",
     address: "إسطنبول، تركيا",
-    workingHours: "10 صباحًا - 6 مساءً",
-    freeShippingThreshold: 500,
-    shippingFee: 30,
+    facebook: "https://www.facebook.com/profile.php?id=61550770286748",
+    instagram: "https://www.instagram.com/_treemass_",
+    twitter: "",
     currency: "ل.ت",
-  }, { merge: true });
+    shippingFee: 20,
+    freeShippingThreshold: 500,
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(doc(db, "settings", "general"), defaultSettings, { merge: true });
+  await setDoc(doc(db, "settings", "site"), defaultSettings, { merge: true });
 
   console.log("\n✅ Seed completed!");
   console.log("\n👉 To make a user admin, sign up via the app first then run:");

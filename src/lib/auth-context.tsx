@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db, googleProvider } from "@/lib/firebase";
+import { LangCtx } from "@/lib/i18n";
 
 export type AppUser = {
   uid: string;
@@ -67,6 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const langCtx = useContext(LangCtx);
+  const lang = langCtx?.lang || "ar";
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -101,7 +104,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await ensureUserDoc(cred.user);
     },
     signInGoogle: async () => {
-      await signInWithPopup(auth, googleProvider);
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (error: any) {
+        if (error.code === 'auth/popup-blocked') {
+          throw new Error(lang === "ar" ? "تم حظر النافذة المنبثقة، يرجى السماح بها للمتابعة" : "Popup blocked, please allow it to continue");
+        }
+        console.error("Google Auth Error:", error);
+        throw error;
+      }
     },
     resetPassword: async (email) => {
       await sendPasswordResetEmail(auth, email);
