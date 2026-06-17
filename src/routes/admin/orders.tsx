@@ -138,6 +138,10 @@ function AdminOrders() {
         <head>
           <title>Kargo Etiketleri Yazdır</title>
           <style>
+            @page {
+              size: A4 portrait;
+              margin: 10mm;
+            }
             body {
               font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
               margin: 0;
@@ -146,12 +150,12 @@ function AdminOrders() {
               color: black;
             }
             .printable-label {
-              width: 100mm;
-              height: 150mm;
+              width: 190mm;
+              height: 277mm;
               box-sizing: border-box;
-              border: 3px solid black;
-              padding: 10px;
-              margin: 15px auto;
+              border: 5px solid black;
+              padding: 25px;
+              margin: 0 auto;
               page-break-after: always;
               break-after: page;
               display: flex;
@@ -165,28 +169,28 @@ function AdminOrders() {
               display: flex;
               justify-content: space-between;
               align-items: center;
-              border-bottom: 2px solid black;
-              padding-bottom: 6px;
-              margin-bottom: 6px;
+              border-bottom: 4px solid black;
+              padding-bottom: 12px;
+              margin-bottom: 12px;
             }
             .header-logo {
-              font-size: 16px;
+              font-size: 32px;
               font-weight: 900;
               letter-spacing: 1px;
             }
             .header-meta {
               text-align: right;
-              font-size: 8px;
+              font-size: 16px;
               font-weight: bold;
-              line-height: 1.3;
+              line-height: 1.4;
             }
 
             /* Barcode Section */
             .barcode-section {
               text-align: center;
-              margin-bottom: 8px;
-              padding: 4px 0;
-              border-bottom: 1px solid black;
+              margin-bottom: 16px;
+              padding: 8px 0;
+              border-bottom: 2px solid black;
             }
             .barcode-wrapper {
               display: flex;
@@ -202,81 +206,81 @@ function AdminOrders() {
             /* Info Block (Sender & Recipient) */
             .info-block {
               display: flex;
-              border: 1px solid black;
-              margin-bottom: 8px;
+              border: 2px solid black;
+              margin-bottom: 16px;
               flex: 1;
-              min-height: 180px;
+              min-height: 380px;
             }
             .info-left {
               flex: 7;
-              padding: 8px;
-              border-right: 1px solid black;
+              padding: 16px;
+              border-right: 2px solid black;
               display: flex;
               flex-direction: column;
-              gap: 4px;
+              gap: 8px;
               text-align: right;
             }
             .info-right {
               flex: 3;
-              padding: 8px;
+              padding: 16px;
               display: flex;
               flex-direction: column;
-              gap: 4px;
+              gap: 8px;
               align-items: center;
               text-align: center;
               background-color: #fafafa;
             }
             .info-section-title {
-              font-size: 8px;
+              font-size: 14px;
               font-weight: 900;
               color: #333;
-              border-bottom: 1px dashed black;
-              padding-bottom: 2px;
-              margin-bottom: 4px;
+              border-bottom: 2px dashed black;
+              padding-bottom: 4px;
+              margin-bottom: 8px;
               width: 100%;
               text-align: center;
               font-family: sans-serif;
             }
             .recipient-name {
-              font-size: 14px;
+              font-size: 26px;
               font-weight: 900;
-              margin-bottom: 2px;
+              margin-bottom: 4px;
               word-break: break-word;
             }
             .recipient-address {
-              font-size: 11px;
+              font-size: 20px;
               font-weight: bold;
-              line-height: 1.3;
+              line-height: 1.4;
               word-break: break-word;
               flex: 1;
             }
             .recipient-district {
-              font-size: 11px;
+              font-size: 20px;
               font-weight: 900;
               color: #333;
               font-family: 'Courier New', Courier, monospace;
             }
             .recipient-city {
-              font-size: 12px;
+              font-size: 22px;
               font-weight: 900;
               border-top: 1px solid #ddd;
-              padding-top: 4px;
+              padding-top: 6px;
               font-family: 'Courier New', Courier, monospace;
             }
             .recipient-phone {
-              font-size: 11px;
+              font-size: 20px;
               font-weight: 900;
               font-family: 'Courier New', Courier, monospace;
             }
             .sender-name {
-              font-size: 11px;
+              font-size: 20px;
               font-weight: 900;
             }
             .sender-details {
-              font-size: 8px;
-              line-height: 1.2;
+              font-size: 14px;
+              line-height: 1.4;
               color: #555;
-              margin-bottom: 6px;
+              margin-bottom: 12px;
             }
             .vertical-barcode-container {
               flex: 1;
@@ -286,33 +290,33 @@ function AdminOrders() {
               overflow: visible;
               position: relative;
               width: 100%;
-              margin-top: 5px;
+              margin-top: 15px;
             }
             .vertical-barcode-container svg {
               transform: rotate(90deg);
               transform-origin: center;
-              width: 90px;
-              height: 25px;
+              width: 180px;
+              height: 45px;
             }
 
             /* Route Code Styling */
             .route-block {
-              border: 2px solid black;
+              border: 4px solid black;
               background-color: #f3f4f6;
-              padding: 8px;
+              padding: 16px;
               text-align: center;
-              margin-bottom: 8px;
+              margin-bottom: 16px;
             }
             .route-title {
-              font-size: 9px;
+              font-size: 16px;
               font-weight: 900;
-              margin-bottom: 2px;
+              margin-bottom: 4px;
               letter-spacing: 0.5px;
             }
             .route-value {
-              font-size: 24px;
+              font-size: 54px;
               font-weight: 900;
-              letter-spacing: 2px;
+              letter-spacing: 3px;
               font-family: 'Courier New', Courier, monospace;
             }
 
@@ -321,14 +325,14 @@ function AdminOrders() {
               display: flex;
               justify-content: space-between;
               align-items: flex-end;
-              font-size: 8px;
+              font-size: 16px;
               font-weight: bold;
-              border-top: 1px solid black;
-              padding-top: 6px;
+              border-top: 2px solid black;
+              padding-top: 12px;
             }
             .footer-left {
               text-align: left;
-              line-height: 1.4;
+              line-height: 1.5;
             }
             .footer-left div {
               font-family: 'Courier New', Courier, monospace;
@@ -337,7 +341,7 @@ function AdminOrders() {
               text-align: right;
             }
             .destination-hub {
-              font-size: 12px;
+              font-size: 26px;
               font-weight: 900;
               font-family: system-ui, sans-serif;
             }
@@ -345,7 +349,7 @@ function AdminOrders() {
             @media print {
               .printable-label {
                 margin: 0;
-                border: 3px solid black;
+                border: 5px solid black;
               }
               body {
                 background: white;
@@ -363,16 +367,16 @@ function AdminOrders() {
                 try {
                   JsBarcode("#barcode-top-" + id, id, {
                     format: "CODE128",
-                    height: 50,
-                    width: 1.3,
+                    height: 90,
+                    width: 2.2,
                     displayValue: true,
-                    fontSize: 11,
-                    margin: 5
+                    fontSize: 18,
+                    margin: 8
                   });
                   JsBarcode("#barcode-vert-" + id, id, {
                     format: "CODE128",
-                    height: 20,
-                    width: 1.0,
+                    height: 35,
+                    width: 1.5,
                     displayValue: false,
                     margin: 0
                   });
