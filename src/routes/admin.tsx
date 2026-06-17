@@ -76,6 +76,7 @@ function AdminLayout() {
     { name: "العروض", icon: Sparkles, path: "/admin/offers" },
     { name: "البانرز", icon: Menu, path: "/admin/banners" },
     { name: "الهيرو", icon: LayoutDashboard, path: "/admin/hero" },
+    { name: "محتوى الموقع", icon: FileText, path: "/admin/site-content" },
     { name: "النشرة البريدية", icon: Bell, path: "/admin/newsletter" },
     { name: "الرسائل", icon: Mail, path: "/admin/contacts" },
     { name: "الإعدادات", icon: Settings, path: "/admin/settings" },
