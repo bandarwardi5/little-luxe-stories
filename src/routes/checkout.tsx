@@ -296,11 +296,47 @@ function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Coupon */}
+              <div className="border-t pt-5 mb-5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-2">
+                  {lang === "ar" ? "كود الخصم" : lang === "tr" ? "İndirim Kuponu" : "Coupon Code"}
+                </label>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                    <div className="text-sm">
+                      <span className="font-mono font-black text-emerald-700">{appliedCoupon.code}</span>
+                      <span className="ms-2 text-xs text-emerald-600">−{appliedCoupon.discount}%</span>
+                    </div>
+                    <button type="button" onClick={() => setAppliedCoupon(null)} className="text-xs text-rose-500 font-bold hover:underline">
+                      {lang === "ar" ? "إزالة" : lang === "tr" ? "Kaldır" : "Remove"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      placeholder={lang === "ar" ? "أدخل الكود" : lang === "tr" ? "Kodu girin" : "Enter code"}
+                      className="flex-1 border rounded-xl px-3 py-2 outline-none focus:border-primary text-sm font-mono text-start"
+                    />
+                    <button type="button" onClick={applyCoupon} className="bg-foreground text-background px-4 py-2 rounded-xl font-bold text-sm hover:opacity-90 transition">
+                      {lang === "ar" ? "تطبيق" : lang === "tr" ? "Uygula" : "Apply"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3 text-sm border-t pt-6 mb-6">
                 <div className="flex justify-between text-muted-foreground">
                   <span>{t("cart.subtotal")}</span>
                   <span className="font-bold text-foreground">{subtotal} {currency}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600">
+                    <span>{lang === "ar" ? "الخصم" : lang === "tr" ? "İndirim" : "Discount"}</span>
+                    <span className="font-bold">− {discountAmount} {currency}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-muted-foreground">
                   <span>{t("cart.shipping")}</span>
                   <span className="font-bold text-foreground">
@@ -312,6 +348,7 @@ function CheckoutPage() {
                   <span className="text-primary">{finalTotal} {currency}</span>
                 </div>
               </div>
+
 
               <button 
                 type="submit"
