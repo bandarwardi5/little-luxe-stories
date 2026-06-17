@@ -15,7 +15,9 @@ import {
   Loader2,
   ShieldAlert,
   Mail,
-  BookOpen
+  BookOpen,
+  FileText
+
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
