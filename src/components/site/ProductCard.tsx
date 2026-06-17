@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import type { FsProduct } from "@/lib/firestore-hooks";
 import { imageUrl } from "@/lib/firebase";
-import { useSettings } from "@/lib/firestore-hooks";
+import { useSettings, useCategories } from "@/lib/firestore-hooks";
 import { useWishlist } from "@/lib/wishlist-context";
-import { useLang, getLocalizedCurrency } from "@/lib/i18n";
+import { useLang, getLocalizedCurrency, tl as tlStatic } from "@/lib/i18n";
 import { ShoppingBag, Heart } from "lucide-react";
 
 type CardProduct = Pick<FsProduct, "id" | "name" | "price" | "image"> &
@@ -13,9 +13,24 @@ export function ProductCard({ product }: { product: CardProduct }) {
   const { settings } = useSettings();
   const { toggle: toggleWishlist, has: isInWishlist } = useWishlist();
   const { lang, tl, t, dir } = useLang();
+  const { data: categories } = useCategories();
 
   const name = tl(product.name);
   const currency = getLocalizedCurrency(settings?.currency, lang);
+
+  // Resolve localized category by looking up the categories collection
+  const rawCategory = product.category;
+  const catLabel = (() => {
+    if (!rawCategory) return "";
+    const arName = typeof rawCategory === "string" ? rawCategory : (rawCategory as any)?.ar;
+    const match = categories.find((c) => {
+      const cAr = typeof c.name === "string" ? c.name : (c.name as any)?.ar;
+      return cAr && arName && cAr === arName;
+    });
+    if (match) return tl(match.name as any);
+    return tl(rawCategory as any);
+  })();
+
 
   // Calculate discount percentage
   const discount = product.oldPrice && product.oldPrice > product.price
@@ -85,9 +100,9 @@ export function ProductCard({ product }: { product: CardProduct }) {
 
         {/* Product Details */}
         <div className="px-1 text-start">
-          {product.category && (
+          {catLabel && (
             <span className="text-[10px] font-extrabold text-primary tracking-wider uppercase mb-1 block">
-              {tl(product.category as any)}
+              {catLabel}
             </span>
           )}
           <Link to="/product/$id" params={{ id: String(product.id) }}>

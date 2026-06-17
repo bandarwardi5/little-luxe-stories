@@ -7,6 +7,7 @@ import {
   useCategories,
   useBanners,
   useHero,
+  useSettings,
 } from "@/lib/firestore-hooks";
 import {
   Carousel,
@@ -33,7 +34,9 @@ function Index() {
   const { data: categories, loading: categoriesLoading } = useCategories();
   const { data: banners, loading: bannersLoading } = useBanners();
   const { data: heroItems, loading: heroLoading } = useHero();
-  const { t, tl, dir } = useLang();
+  const { settings } = useSettings();
+  const { t, tl, dir, lang } = useLang();
+
 
   if (productsLoading || categoriesLoading || bannersLoading || heroLoading) {
     return (
@@ -134,19 +137,52 @@ function Index() {
                   key={c.id}
                   to="/shop"
                   search={{ category: typeof c.name === "string" ? c.name : (c.name as any)?.ar || catName }}
-                  className="group relative rounded-3xl p-6 flex flex-col items-center text-center bg-[#FFF2F2] border border-rose-100/40 hover:shadow-2xl hover:shadow-rose-100/60 hover:-translate-y-2 transition-all duration-500"
+                  className="group relative rounded-3xl overflow-hidden flex flex-col bg-[#FFF2F2] border border-rose-100/40 hover:shadow-2xl hover:shadow-rose-100/60 hover:-translate-y-2 transition-all duration-500"
                 >
-                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white bg-white overflow-hidden shadow-md flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:border-primary/20">
-                    <img src={imageUrl(c.image)} alt={catName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className="aspect-[4/5] w-full overflow-hidden bg-white">
+                    <img src={imageUrl(c.image)} alt={catName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
-                  <h3 className="font-extrabold text-base md:text-lg mt-4 mb-1 text-foreground/90 transition-colors group-hover:text-primary">{catName}</h3>
-                  <p className="text-[10px] md:text-xs font-semibold text-primary bg-white px-4 py-1.5 rounded-full mt-2 shadow-sm border border-rose-50/50">{categoryProductsCount} {t("home.products_count")}</p>
+                  <div className="p-4 text-center">
+                    <h3 className="font-extrabold text-base md:text-lg mb-2 text-foreground/90 transition-colors group-hover:text-primary">{catName}</h3>
+                    <p className="inline-block text-[10px] md:text-xs font-semibold text-primary bg-white px-4 py-1.5 rounded-full shadow-sm border border-rose-50/50">{categoryProductsCount} {t("home.products_count")}</p>
+                  </div>
                 </Link>
               );
             })}
           </div>
         </div>
       </section>
+
+      {/* Promotional Banners (managed in admin) */}
+      {activeBanners.length > 0 && (
+        <section className="container mx-auto px-4 py-10">
+          <div className={`grid gap-4 ${activeBanners.length === 1 ? "grid-cols-1" : activeBanners.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-3"}`}>
+            {activeBanners.slice(0, 6).map((b: any) => (
+              <Link
+                key={b.id}
+                to={b.ctaLink || "/shop"}
+                className="relative group overflow-hidden rounded-2xl block min-h-[200px] md:min-h-[260px]"
+                style={{ backgroundColor: b.bgColor || undefined }}
+              >
+                {b.image && (
+                  <img src={imageUrl(b.image)} alt={tl(b.title as any) || "banner"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
+                  {b.subtitle && <span className="text-[10px] tracking-widest font-bold mb-1 uppercase opacity-90">{tl(b.subtitle as any)}</span>}
+                  <h3 className="text-xl md:text-2xl font-extrabold mb-3 drop-shadow-md">{tl(b.title as any)}</h3>
+                  {b.ctaText && (
+                    <span className="inline-block bg-white text-foreground px-4 py-2 text-xs font-bold rounded-full w-max shadow-md group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      {tl(b.ctaText as any)}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
 
       {/* New Arrivals Carousel */}
       <section className="container mx-auto px-4 py-14 overflow-hidden">
@@ -254,45 +290,64 @@ function Index() {
         </div>
       </section>
 
-      {/* Collections Grid - Different from typical cards */}
-      <section className="container mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <p className="text-xs tracking-widest text-primary font-bold mb-2">{t("home.collections.pretitle")}</p>
-            <h2 className="text-2xl md:text-3xl font-bold">{t("home.collections")}</h2>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[600px] md:h-[500px]">
-          <Link to="/shop" className="relative group overflow-hidden rounded-2xl md:col-span-2 md:row-span-2">
-            <img src={heroKids} alt={t("home.collections.summer.title")} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-              <span className="bg-primary px-3 py-1 text-xs font-bold rounded-full mb-3 inline-block">{t("home.collections.badge")}</span>
-              <h3 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-md">{t("home.collections.summer.title")}</h3>
-              <p className="text-white/90 text-sm mb-4 max-w-md font-medium drop-shadow-sm">{t("home.collections.summer.desc")}</p>
-              <span className="inline-flex items-center gap-2 text-sm font-semibold hover:underline">
-                {t("home.collections.shop")} <span className="rotate-180">→</span>
-              </span>
+      {/* Collections Grid - dynamic from settings.collections */}
+      {(() => {
+        const fallbackCollections = [
+          { title: t("home.collections.summer.title"), description: t("home.collections.summer.desc"), image: heroKids, link: "/shop", badge: t("home.collections.badge"), featured: true },
+          { title: t("home.collections.boys.title"), image: bannerBoys, link: "/shop" },
+          { title: t("home.collections.girls.title"), image: bannerGirls, link: "/shop" },
+        ];
+        const raw = (settings?.collections as any[]) || [];
+        const cols = raw.length > 0
+          ? raw.filter((c: any) => c && (c.title || c.image)).map((c: any) => ({
+              title: tl(c.title as any),
+              description: tl(c.description as any),
+              image: c.image ? imageUrl(c.image) : heroKids,
+              link: c.link || "/shop",
+              badge: c.badge ? tl(c.badge as any) : "",
+              featured: !!c.featured,
+            }))
+          : fallbackCollections;
+
+        const featured = cols.find((c) => c.featured) || cols[0];
+        const others = cols.filter((c) => c !== featured).slice(0, 2);
+
+        return (
+          <section className="container mx-auto px-4 py-10">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <p className="text-xs tracking-widest text-primary font-bold mb-2">{t("home.collections.pretitle")}</p>
+                <h2 className="text-2xl md:text-3xl font-bold">{t("home.collections")}</h2>
+              </div>
             </div>
-          </Link>
-          <Link to="/shop" className="relative group overflow-hidden rounded-2xl md:col-span-1">
-            <img src={bannerBoys} alt={t("home.collections.boys.title")} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 text-center">
-              <h3 className="text-xl font-bold mb-2">{t("home.collections.boys.title")}</h3>
-              <span className="border border-white px-4 py-2 text-xs font-medium rounded hover:bg-white hover:text-black transition">{t("home.collections.discover")}</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[600px] md:h-[500px]">
+              <Link to={featured.link} className="relative group overflow-hidden rounded-2xl md:col-span-2 md:row-span-2">
+                <img src={featured.image} alt={featured.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  {featured.badge && <span className="bg-primary px-3 py-1 text-xs font-bold rounded-full mb-3 inline-block">{featured.badge}</span>}
+                  <h3 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-md">{featured.title}</h3>
+                  {featured.description && <p className="text-white/90 text-sm mb-4 max-w-md font-medium drop-shadow-sm">{featured.description}</p>}
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold hover:underline">
+                    {t("home.collections.shop")} <span className="rotate-180">→</span>
+                  </span>
+                </div>
+              </Link>
+              {others.map((c, i) => (
+                <Link key={i} to={c.link} className="relative group overflow-hidden rounded-2xl md:col-span-1">
+                  <img src={c.image} alt={c.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 text-center">
+                    <h3 className="text-xl font-bold mb-2">{c.title}</h3>
+                    <span className="border border-white px-4 py-2 text-xs font-medium rounded hover:bg-white hover:text-black transition">{t("home.collections.discover")}</span>
+                  </div>
+                </Link>
+              ))}
             </div>
-          </Link>
-          <Link to="/shop" className="relative group overflow-hidden rounded-2xl md:col-span-1">
-            <img src={bannerGirls} alt={t("home.collections.girls.title")} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 text-center">
-              <h3 className="text-xl font-bold mb-2">{t("home.collections.girls.title")}</h3>
-              <span className="border border-white px-4 py-2 text-xs font-medium rounded hover:bg-white hover:text-black transition">{t("home.collections.discover")}</span>
-            </div>
-          </Link>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
+
 
       {/* Shop by Age - Colorful Design */}
       {/* <section className="relative py-20 overflow-hidden bg-gradient-to-br from-banner-peach/40 via-white to-banner-mint/40">
@@ -361,26 +416,39 @@ function Index() {
           <p className="text-xs tracking-widest text-primary font-bold text-center mb-2 font-ethno uppercase">Testimonials</p>
           <h2 className="text-3xl md:text-4xl font-black text-center mb-12 font-ethno">{t("home.testimonials.title")}</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: t("home.testimonials.client1.name"), role: t("home.testimonials.client1.role"), text: t("home.testimonials.client1.text"), color: "from-rose-100 to-pink-50" },
-              { name: t("home.testimonials.client2.name"), role: t("home.testimonials.client2.role"), text: t("home.testimonials.client2.text"), color: "from-amber-100 to-orange-50" },
-              { name: t("home.testimonials.client3.name"), role: t("home.testimonials.client3.role"), text: t("home.testimonials.client3.text"), color: "from-emerald-100 to-teal-50" },
-            ].map((tt) => (
-              <div key={tt.name} className={`bg-gradient-to-br ${tt.color} border border-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-shadow`}>
-                <div className="text-5xl text-primary/30 mb-3 leading-none">"</div>
-                <p className="text-sm leading-relaxed text-foreground/80 mb-6">{tt.text}</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary text-white grid place-items-center font-black text-lg shadow-md">
-                    {tt.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black">{tt.name}</h4>
-                    <p className="text-xs text-muted-foreground">{tt.role}</p>
+            {(() => {
+              const fallback = [
+                { name: t("home.testimonials.client1.name"), role: t("home.testimonials.client1.role"), text: t("home.testimonials.client1.text") },
+                { name: t("home.testimonials.client2.name"), role: t("home.testimonials.client2.role"), text: t("home.testimonials.client2.text") },
+                { name: t("home.testimonials.client3.name"), role: t("home.testimonials.client3.role"), text: t("home.testimonials.client3.text") },
+              ];
+              const colors = ["from-rose-100 to-pink-50", "from-amber-100 to-orange-50", "from-emerald-100 to-teal-50"];
+              const raw = (settings?.testimonials as any[]) || [];
+              const items = raw.length > 0
+                ? raw.filter((x: any) => x && (x.name || x.text)).map((x: any) => ({
+                    name: tl(x.name as any),
+                    role: tl(x.role as any),
+                    text: tl(x.text as any),
+                  }))
+                : fallback;
+              return items.map((tt, i) => (
+                <div key={i} className={`bg-gradient-to-br ${colors[i % colors.length]} border border-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-shadow`}>
+                  <div className="text-5xl text-primary/30 mb-3 leading-none">"</div>
+                  <p className="text-sm leading-relaxed text-foreground/80 mb-6">{tt.text}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary text-white grid place-items-center font-black text-lg shadow-md">
+                      {(tt.name || "?").charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black">{tt.name}</h4>
+                      <p className="text-xs text-muted-foreground">{tt.role}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
+
         </div>
       </section>
 

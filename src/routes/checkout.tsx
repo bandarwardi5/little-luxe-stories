@@ -4,7 +4,7 @@ import { Footer } from "@/components/site/Footer";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
 import { db } from "@/lib/firebase";
-import { useSettings } from "@/lib/firestore-hooks";
+import { useSettings, useOffers } from "@/lib/firestore-hooks";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { CreditCard, Truck, ShieldCheck, ShoppingBag, Loader2, ArrowRight, CheckCircle2, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -22,6 +22,7 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const { settings } = useSettings();
+  const { data: offers } = useOffers();
   const { t, dir, lang } = useLang();
 
   const [form, setForm] = useState({
@@ -34,12 +35,29 @@ function CheckoutPage() {
     notes: "",
   });
 
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number; title?: any } | null>(null);
+
   const shippingFee = settings?.shippingFee ?? 50;
   const freeThreshold = settings?.freeShippingThreshold ?? 500;
-  
+
   const shipping = (freeThreshold > 0 && subtotal >= freeThreshold) ? 0 : shippingFee;
-  const finalTotal = subtotal + shipping;
+  const discountAmount = appliedCoupon ? Math.round((subtotal * appliedCoupon.discount) / 100) : 0;
+  const finalTotal = Math.max(0, subtotal - discountAmount + shipping);
   const currency = getLocalizedCurrency(settings?.currency, lang);
+
+  const applyCoupon = () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    const offer = offers.find((o: any) => (o.code || "").toUpperCase() === code && o.active !== false);
+    if (!offer) {
+      toast.error(lang === "ar" ? "كود الخصم غير صالح أو منتهي" : lang === "tr" ? "Geçersiz kupon kodu" : "Invalid coupon code");
+      return;
+    }
+    setAppliedCoupon({ code, discount: offer.discount || 0, title: offer.title });
+    toast.success(lang === "ar" ? `تم تطبيق خصم ${offer.discount}%` : lang === "tr" ? `${offer.discount}% indirim uygulandı` : `${offer.discount}% discount applied`);
+  };
+
 
   // Keep city in sync with default translation until user types something else
   useEffect(() => {
@@ -76,6 +94,8 @@ function CheckoutPage() {
         })),
         subtotal,
         shipping,
+        discount: discountAmount,
+        coupon: appliedCoupon?.code || null,
         total: finalTotal,
         status: "pending",
         paymentMethod: form.paymentMethod,
@@ -276,11 +296,47 @@ function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Coupon */}
+              <div className="border-t pt-5 mb-5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-2">
+                  {lang === "ar" ? "كود الخصم" : lang === "tr" ? "İndirim Kuponu" : "Coupon Code"}
+                </label>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                    <div className="text-sm">
+                      <span className="font-mono font-black text-emerald-700">{appliedCoupon.code}</span>
+                      <span className="ms-2 text-xs text-emerald-600">−{appliedCoupon.discount}%</span>
+                    </div>
+                    <button type="button" onClick={() => setAppliedCoupon(null)} className="text-xs text-rose-500 font-bold hover:underline">
+                      {lang === "ar" ? "إزالة" : lang === "tr" ? "Kaldır" : "Remove"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      placeholder={lang === "ar" ? "أدخل الكود" : lang === "tr" ? "Kodu girin" : "Enter code"}
+                      className="flex-1 border rounded-xl px-3 py-2 outline-none focus:border-primary text-sm font-mono text-start"
+                    />
+                    <button type="button" onClick={applyCoupon} className="bg-foreground text-background px-4 py-2 rounded-xl font-bold text-sm hover:opacity-90 transition">
+                      {lang === "ar" ? "تطبيق" : lang === "tr" ? "Uygula" : "Apply"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3 text-sm border-t pt-6 mb-6">
                 <div className="flex justify-between text-muted-foreground">
                   <span>{t("cart.subtotal")}</span>
                   <span className="font-bold text-foreground">{subtotal} {currency}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600">
+                    <span>{lang === "ar" ? "الخصم" : lang === "tr" ? "İndirim" : "Discount"}</span>
+                    <span className="font-bold">− {discountAmount} {currency}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-muted-foreground">
                   <span>{t("cart.shipping")}</span>
                   <span className="font-bold text-foreground">
@@ -292,6 +348,7 @@ function CheckoutPage() {
                   <span className="text-primary">{finalTotal} {currency}</span>
                 </div>
               </div>
+
 
               <button 
                 type="submit"
