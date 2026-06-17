@@ -94,6 +94,8 @@ function CheckoutPage() {
         })),
         subtotal,
         shipping,
+        discount: discountAmount,
+        coupon: appliedCoupon?.code || null,
         total: finalTotal,
         status: "pending",
         paymentMethod: form.paymentMethod,
