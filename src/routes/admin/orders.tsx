@@ -603,7 +603,9 @@ function AdminOrders() {
                 <div className="bg-secondary/20 p-4 rounded-2xl">
                   <h4 className="text-xs font-bold text-muted-foreground mb-3 uppercase">العنوان</h4>
                   <p className="text-sm leading-relaxed">{selectedOrder.address}</p>
-                  <p className="text-sm font-bold mt-1">{selectedOrder.city}</p>
+                  <p className="text-sm font-bold mt-1">
+                    {selectedOrder.district ? `${selectedOrder.district}, ${selectedOrder.city}` : selectedOrder.city}
+                  </p>
                 </div>
                 <div className="bg-secondary/20 p-4 rounded-2xl">
                   <h4 className="text-xs font-bold text-muted-foreground mb-3 uppercase">الدفع والحالة</h4>
