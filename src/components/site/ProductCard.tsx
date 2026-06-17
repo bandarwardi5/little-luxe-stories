@@ -100,9 +100,9 @@ export function ProductCard({ product }: { product: CardProduct }) {
 
         {/* Product Details */}
         <div className="px-1 text-start">
-          {product.category && (
+          {catLabel && (
             <span className="text-[10px] font-extrabold text-primary tracking-wider uppercase mb-1 block">
-              {tl(product.category as any)}
+              {catLabel}
             </span>
           )}
           <Link to="/product/$id" params={{ id: String(product.id) }}>
