@@ -33,7 +33,9 @@ function Index() {
   const { data: categories, loading: categoriesLoading } = useCategories();
   const { data: banners, loading: bannersLoading } = useBanners();
   const { data: heroItems, loading: heroLoading } = useHero();
-  const { t, tl, dir } = useLang();
+  const { settings } = useSettings();
+  const { t, tl, dir, lang } = useLang();
+
 
   if (productsLoading || categoriesLoading || bannersLoading || heroLoading) {
     return (
