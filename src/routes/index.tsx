@@ -134,13 +134,15 @@ function Index() {
                   key={c.id}
                   to="/shop"
                   search={{ category: typeof c.name === "string" ? c.name : (c.name as any)?.ar || catName }}
-                  className="group relative rounded-3xl p-6 flex flex-col items-center text-center bg-[#FFF2F2] border border-rose-100/40 hover:shadow-2xl hover:shadow-rose-100/60 hover:-translate-y-2 transition-all duration-500"
+                  className="group relative rounded-3xl overflow-hidden flex flex-col bg-[#FFF2F2] border border-rose-100/40 hover:shadow-2xl hover:shadow-rose-100/60 hover:-translate-y-2 transition-all duration-500"
                 >
-                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white bg-white overflow-hidden shadow-md flex items-center justify-center transition-all duration-500 group-hover:scale-105 group-hover:border-primary/20">
-                    <img src={imageUrl(c.image)} alt={catName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className="aspect-[4/5] w-full overflow-hidden bg-white">
+                    <img src={imageUrl(c.image)} alt={catName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
-                  <h3 className="font-extrabold text-base md:text-lg mt-4 mb-1 text-foreground/90 transition-colors group-hover:text-primary">{catName}</h3>
-                  <p className="text-[10px] md:text-xs font-semibold text-primary bg-white px-4 py-1.5 rounded-full mt-2 shadow-sm border border-rose-50/50">{categoryProductsCount} {t("home.products_count")}</p>
+                  <div className="p-4 text-center">
+                    <h3 className="font-extrabold text-base md:text-lg mb-2 text-foreground/90 transition-colors group-hover:text-primary">{catName}</h3>
+                    <p className="inline-block text-[10px] md:text-xs font-semibold text-primary bg-white px-4 py-1.5 rounded-full shadow-sm border border-rose-50/50">{categoryProductsCount} {t("home.products_count")}</p>
+                  </div>
                 </Link>
               );
             })}
