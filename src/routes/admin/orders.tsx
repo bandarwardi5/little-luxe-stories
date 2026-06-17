@@ -711,23 +711,27 @@ function AdminOrders() {
               </div>
 
               <div className="flex flex-col md:flex-row gap-6 items-end md:items-start justify-between border-t pt-6">
-                <div className="space-y-2 w-full md:w-auto">
-                  <h4 className="font-black mb-4">تحديث الحالة</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(STATUSES).map(([statusKey, statusVal]) => {
-                      if (statusKey === "all") return null;
-                      return (
-                        <button
-                          key={statusKey}
-                          onClick={() => updateStatus(selectedOrder.id, statusKey)}
-                          title={statusVal.desc}
-                          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition hover:opacity-90 ${statusVal.color} ${selectedOrder.status === statusKey ? 'ring-2 ring-primary ring-offset-2 font-black' : ''}`}
-                        >
-                          {statusVal.label}
-                        </button>
-                      );
-                    })}
+                <div className="space-y-2 w-full md:w-80">
+                  <h4 className="font-black mb-2">تحديث الحالة</h4>
+                  <div className="relative">
+                    <select
+                      value={selectedOrder.status}
+                      onChange={(e) => updateStatus(selectedOrder.id, e.target.value)}
+                      className="w-full bg-secondary/30 border border-neutral-200 rounded-xl px-4 py-2.5 outline-none focus:border-primary transition font-bold text-sm text-foreground cursor-pointer"
+                    >
+                      {Object.entries(STATUSES).map(([statusKey, statusVal]) => {
+                        if (statusKey === "all") return null;
+                        return (
+                          <option key={statusKey} value={statusKey} className="font-bold">
+                            {statusVal.label}
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
+                  <p className="text-[11px] text-muted-foreground leading-normal mt-1.5">
+                    💡 {STATUSES[selectedOrder.status as keyof typeof STATUSES]?.desc || ""}
+                  </p>
                 </div>
                 
                 <div className="bg-secondary/10 p-6 rounded-2xl w-full md:w-64 space-y-3">
