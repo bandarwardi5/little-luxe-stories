@@ -153,6 +153,37 @@ function Index() {
         </div>
       </section>
 
+      {/* Promotional Banners (managed in admin) */}
+      {activeBanners.length > 0 && (
+        <section className="container mx-auto px-4 py-10">
+          <div className={`grid gap-4 ${activeBanners.length === 1 ? "grid-cols-1" : activeBanners.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-3"}`}>
+            {activeBanners.slice(0, 6).map((b: any) => (
+              <Link
+                key={b.id}
+                to={b.ctaLink || "/shop"}
+                className="relative group overflow-hidden rounded-2xl block min-h-[200px] md:min-h-[260px]"
+                style={{ backgroundColor: b.bgColor || undefined }}
+              >
+                {b.image && (
+                  <img src={imageUrl(b.image)} alt={tl(b.title as any) || "banner"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
+                  {b.subtitle && <span className="text-[10px] tracking-widest font-bold mb-1 uppercase opacity-90">{tl(b.subtitle as any)}</span>}
+                  <h3 className="text-xl md:text-2xl font-extrabold mb-3 drop-shadow-md">{tl(b.title as any)}</h3>
+                  {b.ctaText && (
+                    <span className="inline-block bg-white text-foreground px-4 py-2 text-xs font-bold rounded-full w-max shadow-md group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      {tl(b.ctaText as any)}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+
       {/* New Arrivals Carousel */}
       <section className="container mx-auto px-4 py-14 overflow-hidden">
         <div className="flex items-center justify-between mb-8">
